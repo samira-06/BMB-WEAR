@@ -40,11 +40,11 @@ const gal=L.length?L.map((u,i)=>`<div class="${i===0?'on':''}" onclick="galGo(${
 $('pd_body').innerHTML=`<div><div class="gal-main" id="galMain">${L[0]?`<img src="${L[0]}">`:(p.emoji||'👕')}</div><div class="gal-th">${gal}</div></div>
 <div><h2>${p.name}</h2><div class="price" style="font-size:1.3rem">${p.price.toLocaleString()} FCFA ${p.old?`<s>${p.old.toLocaleString()}</s>`:''}</div>
 <p style="color:#a3a3a3;font-size:.9rem">${p.desc||''}</p>
-<p>${stockOf(p)===0?'<b style="color:#ff5555">Rupture de stock</b>':lowOf(p)?'<b style="color:#f59e0b">Bientôt en rupture — plus que '+stockOf(p)+'</b>':'<small style="color:#22c55e">En stock ('+stockOf(p)+')</small>'}</p>
+<p>${stockOf(p)===0?'<b style="color:#ff5555">Victime de son succès — bientôt de retour</b>':lowOf(p)?'<b style="color:#f59e0b">Plus que quelques pièces</b>':'<small style="color:#22c55e">Disponible</small>'}</p>
 <label>Couleur</label><div class="sw">${(p.colors||[]).map((c,i)=>`<button title="${c.name}" style="background:${c.hex}" class="${i===curC?'on':''}" onclick="selC(${i})"></button>`).join('')}</div>
 <small id="cname">${(p.colors||[])[curC]?.name||''}</small>
 <label>Taille — <a href="#" onclick="event.preventDefault();$('guide').style.display=$('guide').style.display==='none'?'block':'none'" style="text-decoration:underline">Guide des tailles</a></label>
-<div class="sz">${Object.entries(((p.colors||[])[curC]?.sizes)||{}).map(([s,q])=>`<button ${+q<=0?'disabled':''} class="${curS===s?'on':''}" onclick="selS('${s}')">${s} ${+q<=0?'':`(${q})`}</button>`).join('')||'TU'}</div>
+<div class="sz">${Object.entries(((p.colors||[])[curC]?.sizes)||{}).map(([s,q])=>`<button ${+q<=0?'disabled':''} class="${curS===s?'on':''}" onclick="selS('${s}')">${s}</button>`).join('')||'TU'}</div>
 <div id="guide" style="display:none"><table class="guide"><tr><th>Taille</th><th>Poitrine cm</th><th>Long. pull</th><th>Long. pantalon</th></tr><tr><td>S</td><td>96</td><td>66</td><td>100</td></tr><tr><td>M</td><td>100</td><td>68</td><td>102</td></tr><tr><td>L</td><td>104</td><td>70</td><td>104</td></tr><tr><td>XL</td><td>110</td><td>72</td><td>106</td></tr></table></div>
 <div class="qty" style="margin:.7rem 0"><button onclick="chQ(-1)">-</button><b id="qq">1</b><button onclick="chQ(1)">+</button></div>
 <button class="btn" style="width:100%" onclick="addVar()">Ajouter au panier</button></div>`}
@@ -53,7 +53,7 @@ function selC(i){curC=i;curS=null;drawP()}
 function selS(s){curS=s;document.querySelectorAll('.sz button').forEach(b=>b.classList.toggle('on',b.textContent.includes(s)))}
 function chQ(d){curQ=Math.max(1,curQ+d);const e=$('qq');if(e)e.textContent=curQ}
 function addVar(){const p=curP,c=(p.colors||[])[curC];const sz=curS||Object.keys(c?.sizes||{})[0];if(!sz)return toast('Choisis taille');
-const av=+((c.sizes||{})[sz]||0);if(av<curQ)return toast('Stock insuffisant ('+av+')');
+const av=+((c.sizes||{})[sz]||0);if(av<curQ)return toast('Plus assez de stock pour cette taille');
 const key=p.id+'|'+c.name+'|'+sz;const l=cart.find(x=>x.key===key);if(l)l.qty+=curQ;else cart.push({key,id:p.id,color:c.name,size:sz,qty:curQ,price:p.price,name:p.name,emoji:p.emoji,img:c.img||(p.images||[])[0]||''});
 DB.set('bmb_cart',cart);updCart();closeM('pdetail');toast('Ajouté ✓');$('drawer')?.classList.add('open')}
 function fav(id){const u=me();if(!u){toast('Crée un compte pour les favoris');location.href='compte.html';return}
