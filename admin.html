@@ -1,19 +1,66 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — BMB WEAR</title><link rel="stylesheet" href="assets/style.css"></head>
-<body><div class="adm"><div class="side"><h3>BMB<span style="background:#fff;color:#000;padding:.1rem .4rem">ADMIN</span></h3>
-<a href="#" class="on" onclick="tab('dash',this)">Dashboard</a><a href="#" onclick="tab('prods',this)">Produits</a><a href="#" onclick="tab('orders',this)">Commandes</a><a href="index.html">← Site</a></div>
-<div style="padding:1.5rem"><div id="v-dash"><h1>Dashboard BMB</h1><div class="kpis"><div class="kpi"><small>CA</small><strong id="k_ca">0</strong></div><div class="kpi"><small>Commandes</small><strong id="k_nb">0</strong></div><div class="kpi"><small>Produits</small><strong id="k_pr">0</strong></div><div class="kpi"><small>Panier moyen</small><strong id="k_pm">0</strong></div></div><div class="panel"><h3>Dernières</h3><div id="last"></div></div></div>
-<div id="v-prods" style="display:none"><h1>Produits</h1><form class="box" onsubmit="saveP(event)" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><input id="p_name" required placeholder="Nom"><select id="p_cat"><option value="windbreaker">Windbreaker</option><option value="nike">Nike</option><option value="adidas">Adidas</option><option value="accessoire">Accessoire</option></select><input id="p_price" type="number" required placeholder="Prix"><input id="p_old" type="number" placeholder="Ancien prix"><input id="p_emoji" placeholder="Emoji"><label><input type="checkbox" id="p_trend" style="width:auto"> Tendance</label><button class="btn">+ Ajouter</button></form><div class="panel" style="margin-top:1rem"><table><tbody id="plist"></tbody></table></div></div>
-<div id="v-orders" style="display:none"><h1>Commandes</h1><div class="panel"><table><tbody id="olist"></tbody></table></div></div>
+<body>
+<div id="lock" style="min-height:100dvh;display:grid;place-items:center"><form class="box" style="min-width:300px" onsubmit="unlock(event)"><h2>BMB ADMIN</h2><input id="apass" type="password" placeholder="Mot de passe (bmb2026)"><button class="btn" style="width:100%">Entrer</button><p><a href="index.html">← Site</a></p></form></div>
+<div class="adm" id="adm" style="display:none"><div class="side"><h3>BMB<span style="background:#fff;color:#000;padding:.1rem .4rem">ADMIN</span></h3>
+<a class="on" onclick="tab('dash',this)">Dashboard</a><a onclick="tab('prods',this)">Produits</a><a onclick="tab('orders',this)">Commandes</a><a onclick="tab('clients',this)">Clients</a><a onclick="tab('ship',this)">Livraison/Paiement</a><a href="index.html">← Site</a><a onclick="logoutA()">Sortir</a></div>
+<div style="padding:1.4rem;max-width:1000px">
+<div id="v-dash"><h1>Tableau de bord</h1><div class="kpis"><div class="kpi"><small>CA validé</small><strong id="k_ca">0</strong></div><div class="kpi"><small>Commandes</small><strong id="k_nb">0</strong></div><div class="kpi"><small>En attente</small><strong id="k_wait">0</strong></div><div class="kpi"><small>Stock faible</small><strong id="k_low">0</strong></div></div>
+<div class="panel"><h3>Alertes stock (<5 = bientôt rupture)</h3><div id="k_alert"></div></div>
+<div class="panel" style="margin-top:1rem"><h3>Dernières commandes</h3><div id="last"></div></div></div>
+<div id="v-prods" style="display:none"><h1>Produits</h1>
+<form class="box" onsubmit="saveP(event)"><div class="prow"><input id="p_name" required placeholder="Nom article"><select id="p_cat"><option value="windbreaker">Windbreaker Brazil</option><option value="nike">Nike</option><option value="adidas">Adidas</option><option value="accessoire">Accessoire</option></select></div>
+<div class="prow"><input id="p_price" type="number" required placeholder="Prix"><input id="p_old" type="number" placeholder="Ancien prix (promo)"></div>
+<textarea id="p_desc" rows="2" placeholder="Description"></textarea>
+<label>Photos (URL, max 5 — ou laisse vide + emoji)</label>
+<div class="prow"><input class="pimg" placeholder="Photo 1 URL"><input class="pimg" placeholder="Photo 2 URL"></div>
+<div class="prow"><input class="pimg" placeholder="Photo 3 URL"><input class="pimg" placeholder="Photo 4 URL"></div>
+<input class="pimg" placeholder="Photo 5 URL"><input id="p_emoji" placeholder="Emoji si pas de photo 🇧🇷">
+<label>Couleurs + tailles (palette à toi, ex: S:5 M:8 L:6 XL:3 ou TU:10)</label>
+<div id="crow"></div><button type="button" class="btn ghost" onclick="addColor()">+ Couleur</button>
+<div class="prow" style="margin-top:.6rem"><label><input type="checkbox" id="p_trend" style="width:auto"> Tendance</label><label><input type="checkbox" id="p_new" checked style="width:auto"> Nouveau</label></div>
+<input type="hidden" id="p_id"><button class="btn" style="width:100%;margin-top:.6rem">Enregistrer article</button></form>
+<div class="panel" style="margin-top:1rem"><table><thead><tr><th>Article</th><th>Stock</th><th>Prix</th><th></th></tr></thead><tbody id="plist"></tbody></table></div></div>
+<div id="v-orders" style="display:none"><h1>Commandes</h1><div class="panel"><table><thead><tr><th>N° / Client</th><th>Articles</th><th>Total</th><th>Statut</th><th></th></tr></thead><tbody id="olist"></tbody></table></div></div>
+<div id="v-clients" style="display:none"><h1>Clients (1 compte / tel + email)</h1><div class="panel"><table><tbody id="clist"></tbody></table></div></div>
+<div id="v-ship" style="display:none"><h1>Livraison & Paiement (style SYTAM)</h1>
+<form class="box" onsubmit="saveShip(event)"><label>Dakar Centre</label><input id="s_dk" type="number"><label>Banlieue</label><input id="s_bn" type="number"><label>Régions</label><input id="s_rg" type="number"><label>Offerte dès</label><input id="s_free" type="number"><label>Wave</label><input id="s_wv"><label>Orange Money</label><input id="s_om"><label>Free Money</label><input id="s_fm"><button class="btn">Sauver</button></form></div>
 </div></div><div class="toast" id="toast"></div>
-<script>const DB={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};const $=id=>document.getElementById(id);
-function tab(v,a){document.querySelectorAll('.side a').forEach(x=>x.classList.remove('on'));a.classList.add('on');['dash','prods','orders'].forEach(x=>$('v-'+x).style.display=x===v?'block':'none')}
-function load(){const o=DB.get('bmb_orders',[]),p=DB.get('bmb_products',[]);const ca=o.filter(x=>x.status!=='Annulée').reduce((a,x)=>a+x.total,0);
-$('k_ca').textContent=ca.toLocaleString()+' F';$('k_nb').textContent=o.length;$('k_pr').textContent=p.length;$('k_pm').textContent=(o.length?Math.round(ca/o.length):0).toLocaleString();
-$('last').innerHTML=o.slice(0,5).map(x=>`<p><b>${x.num}</b> ${x.nom} ${x.total.toLocaleString()} — ${x.status}</p>`).join('')||'Aucune';
-$('plist').innerHTML=p.map(x=>`<tr><td>${x.emoji} ${x.name}</td><td>${x.price.toLocaleString()}</td><td><button onclick="delP('${x.id}')">Suppr</button></td></tr>`).join('');
-$('olist').innerHTML=o.map((x,i)=>`<tr><td><b>${x.num}</b><br><small>${x.tel}</small></td><td>${x.nom}</td><td>${x.total.toLocaleString()}</td><td><select onchange="st(${i},this.value)">${['En attente','Confirmée','Livrée','Annulée'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}</select></td><td><button onclick="delO(${i})">✕</button></td></tr>`).join('')||'Aucune'}
-function saveP(e){e.preventDefault();let p=DB.get('bmb_products',[]);p.unshift({id:'p'+Date.now(),name:$('p_name').value,cat:$('p_cat').value,price:+$('p_price').value,old:+$('p_old').value||0,emoji:$('p_emoji').value||'👕',trend:$('p_trend').checked,isnew:1});DB.set('bmb_products',p);e.target.reset();load()}
-function delP(id){DB.set('bmb_products',DB.get('bmb_products',[]).filter(x=>x.id!==id));load()}
+<script>
+const DB={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
+const $=id=>document.getElementById(id);
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2000)}
+function unlock(e){e.preventDefault();if($('apass').value==='bmb2026'){sessionStorage.bmb_admin='1';show()}else toast('Mauvais mot de passe')}
+function logoutA(){sessionStorage.removeItem('bmb_admin');location.reload()}
+function show(){$('lock').style.display='none';$('adm').style.display='grid';load()}
+function tab(v,a){document.querySelectorAll('.side a').forEach(x=>x.classList.remove('on'));a.classList.add('on');['dash','prods','orders','clients','ship'].forEach(x=>$('v-'+x).style.display=x===v?'block':'none')}
+function stockOf(p){let t=0;(p.colors||[]).forEach(c=>Object.values(c.sizes||{}).forEach(q=>t+=+q||0));return t}
+function addColor(n='',h='#ffffff',s='S:5 M:5 L:5 XL:5'){const d=document.createElement('div');d.className='prow crow';d.style.margin='.4rem 0';d.innerHTML=`<input class="cn" value="${n}" placeholder="Nom couleur"><div style="display:flex;gap:.4rem"><input type="color" class="ch" value="${h}" style="width:60px"><input class="cs" value="${s}" placeholder="S:5 M:5..."><button type="button" onclick="this.parentElement.parentElement.remove()">✕</button></div>`;$('crow').appendChild(d)}
+function parseSizes(str){const o={};String(str||'').split(/\s+/).forEach(p=>{const[a,b]=p.split(':');if(a)o[a.trim().toUpperCase()]=+b||0});return o}
+function saveP(e){e.preventDefault();const imgs=[...document.querySelectorAll('.pimg')].map(i=>i.value.trim()).filter(Boolean).slice(0,5);
+const colors=[...document.querySelectorAll('.crow')].map(r=>({name:r.querySelector('.cn').value||'Unique',hex:r.querySelector('.ch').value,sizes:parseSizes(r.querySelector('.cs').value)}));
+if(!colors.length)colors.push({name:'Unique',hex:'#ffffff',sizes:{TU:10}});
+let ps=DB.get('bmb_products_v2',[]);const id=$('p_id').value||('p'+Date.now());
+const obj={id,name:$('p_name').value,cat:$('p_cat').value,price:+$('p_price').value,old:+$('p_old').value||0,desc:$('p_desc').value,images:imgs,emoji:$('p_emoji').value||'👕',colors,trend:$('p_trend').checked,isnew:$('p_new').checked};
+const i=ps.findIndex(x=>x.id===id);i>=0?ps[i]=obj:ps.unshift(obj);DB.set('bmb_products_v2',ps);
+e.target.reset();$('crow').innerHTML='';$('p_id').value='';addColor();load();toast('Article enregistré ✓')}
+function editP(id){const p=DB.get('bmb_products_v2',[]).find(x=>x.id===id);if(!p)return;$('p_id').value=p.id;$('p_name').value=p.name;$('p_cat').value=p.cat;$('p_price').value=p.price;$('p_old').value=p.old||'';$('p_desc').value=p.desc||'';$('p_emoji').value=p.emoji||'';
+const ims=document.querySelectorAll('.pimg');ims.forEach((inp,i)=>inp.value=(p.images||[])[i]||'');$('p_trend').checked=!!p.trend;$('p_new').checked=!!p.isnew;
+$('crow').innerHTML='';(p.colors||[]).forEach(c=>addColor(c.name,c.hex,Object.entries(c.sizes||{}).map(([k,v])=>k+':'+v).join(' ')));tab('prods',document.querySelectorAll('.side a')[1]);window.scrollTo(0,0)}
+function delP(id){DB.set('bmb_products_v2',DB.get('bmb_products_v2',[]).filter(x=>x.id!==id));load()}
 function st(i,v){const o=DB.get('bmb_orders',[]);o[i].status=v;DB.set('bmb_orders',o);load()}
 function delO(i){const o=DB.get('bmb_orders',[]);o.splice(i,1);DB.set('bmb_orders',o);load()}
-load();</script></body></html>
+function saveShip(e){e.preventDefault();DB.set('bmb_ship',{dk:+$('s_dk').value,bn:+$('s_bn').value,rg:+$('s_rg').value,free:+$('s_free').value,wv:$('s_wv').value,om:$('s_om').value,fm:$('s_fm').value});toast('Sauvé ✓')}
+function load(){const o=DB.get('bmb_orders',[]),p=DB.get('bmb_products_v2',[]),u=DB.get('bmb_users',[]);
+const ca=o.filter(x=>x.status!=='Annulée').reduce((a,x)=>a+x.total,0);
+$('k_ca').textContent=ca.toLocaleString()+' F';$('k_nb').textContent=o.length;$('k_wait').textContent=o.filter(x=>x.status==='En attente').length;
+const lows=p.filter(x=>{let s=0;(x.colors||[]).forEach(c=>Object.values(c.sizes||{}).forEach(q=>s+=+q||0));return s<5});
+$('k_low').textContent=lows.length;$('k_alert').innerHTML=lows.map(x=>`<p>⚠️ ${x.name} — stock ${stockOf(x)}</p>`).join('')||'Stock OK';
+$('last').innerHTML=o.slice(0,5).map(x=>`<p><b>${x.num}</b> ${x.nom} ${x.total.toLocaleString()} — ${x.status}<br><small>${x.tel} • ${x.zone} • ${x.pay}</small></p>`).join('')||'Aucune';
+$('plist').innerHTML=p.map(x=>{const s=stockOf(x);return `<tr><td>${x.emoji} <b>${x.name}</b><br><small>${(x.colors||[]).map(c=>c.name).join(', ')}</small></td><td>${s===0?'<b style="color:red">RUPTURE</b>':s<5?'<b style="color:orange">'+s+' bientôt rupture</b>':s}</td><td>${x.price.toLocaleString()}</td><td><button onclick="editP('${x.id}')">Edit</button> <button onclick="delP('${x.id}')">✕</button></td></tr>`}).join('');
+$('olist').innerHTML=o.map((x,i)=>`<tr><td><b>${x.num}</b><br>${x.nom}<br><small>${x.tel}<br>${x.zone} ${x.adr||''}<br>${x.code?'Parrain:'+x.code:''}</small></td><td>${x.items.map(it=>`<small>${it.name} ${it.color}/${it.size} x${it.qty}</small>`).join('<br>')}</td><td>${x.total.toLocaleString()}<br><small>${x.pay}</small></td><td><select onchange="st(${i},this.value)">${['En attente','Confirmée','Livrée','Annulée'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}</select></td><td><button onclick="delO(${i})">✕</button></td></tr>`).join('')||'Aucune';
+$('clist').innerHTML=u.map(x=>`<tr><td>${x.name}<br><small>${x.tel} • ${x.email} • ${x.addr||''}</small></td></tr>`).join('')||'Aucun client';
+const sh=DB.get('bmb_ship',{dk:2000,bn:3000,rg:5000,free:50000,wv:'77 478 98 75',om:'77 478 98 75',fm:'76 443 02 18'});
+$('s_dk').value=sh.dk;$('s_bn').value=sh.bn;$('s_rg').value=sh.rg;$('s_free').value=sh.free;$('s_wv').value=sh.wv;$('s_om').value=sh.om;$('s_fm').value=sh.fm}
+addColor('Noir','#000000','S:5 M:5 L:5 XL:5');
+if(sessionStorage.bmb_admin)show();
+</script></body></html>
