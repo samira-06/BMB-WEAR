@@ -17,7 +17,7 @@
 <div class="prow"><input class="pimg" placeholder="ou Photo 1 URL"><input class="pimg" placeholder="ou Photo 2 URL"></div>
 <div class="prow"><input class="pimg" placeholder="ou Photo 3 URL"><input class="pimg" placeholder="ou Photo 4 URL"></div>
 <input class="pimg" placeholder="ou Photo 5 URL"><input id="p_emoji" placeholder="Emoji si pas de photo 🇧🇷">
-<label>Couleurs + tailles (palette à toi, ex: S:5 M:8 L:6 XL:3 ou TU:10)</label>
+<label>Couleurs (max 5 — photo par couleur optionnelle, pas obligatoire)</label>
 <div id="crow"></div><button type="button" class="btn ghost" onclick="addColor()">+ Couleur</button>
 <div class="prow" style="margin-top:.6rem"><label><input type="checkbox" id="p_trend" style="width:auto"> Tendance</label><label><input type="checkbox" id="p_new" checked style="width:auto"> Nouveau</label></div>
 <input type="hidden" id="p_id"><button class="btn" style="width:100%;margin-top:.6rem">Enregistrer article</button></form>
@@ -36,7 +36,8 @@ function logoutA(){sessionStorage.removeItem('bmb_admin');location.reload()}
 function show(){$('lock').style.display='none';$('adm').style.display='grid';load()}
 function tab(v,a){document.querySelectorAll('.side a').forEach(x=>x.classList.remove('on'));a.classList.add('on');['dash','prods','orders','clients','ship'].forEach(x=>$('v-'+x).style.display=x===v?'block':'none')}
 function stockOf(p){let t=0;(p.colors||[]).forEach(c=>Object.values(c.sizes||{}).forEach(q=>t+=+q||0));return t}
-function addColor(n='',h='#ffffff',s='S:5 M:5 L:5 XL:5'){const d=document.createElement('div');d.className='prow crow';d.style.margin='.4rem 0';d.innerHTML=`<input class="cn" value="${n}" placeholder="Nom couleur"><div style="display:flex;gap:.4rem"><input type="color" class="ch" value="${h}" style="width:60px"><input class="cs" value="${s}" placeholder="S:5 M:5..."><button type="button" onclick="this.parentElement.parentElement.remove()">✕</button></div>`;$('crow').appendChild(d)}
+function addColor(n='',h='#ffffff',s='S:5 M:5 L:5 XL:5',img=''){if(document.querySelectorAll('.crow').length>=5)return toast('Max 5 couleurs');const d=document.createElement('div');d.className='crow';d.style.cssText='border:1px solid #2a2a2a;border-radius:12px;padding:.6rem;margin:.5rem 0;display:grid;gap:.45rem';d.innerHTML=`<div class="prow"><input class="cn" value="${n}" placeholder="Nom couleur"><div style="display:flex;gap:.4rem;align-items:center"><input type="color" class="ch" value="${h}" style="width:56px"><button type="button" onclick="this.closest('.crow').remove()">✕</button></div></div><div class="prow"><label style="font-size:.72rem">📷 Photo couleur (local)<input type="file" class="cf" accept="image/*" onchange="readColorFile(this)"></label><input class="ci" value="${(img||'').startsWith('data:')?'':(img||'')}" placeholder="ou URL photo couleur"></div><div style="display:flex;gap:.4rem;align-items:center"><img class="cp" src="${img||''}" style="width:52px;height:62px;object-fit:cover;border-radius:10px;border:1px solid #333;${img?'':'display:none'}"><input class="cs" value="${s}" placeholder="Tailles S:5 M:5 L:5 XL:5 ou TU:10"></div><input type="hidden" class="cdata" value="${(img||'').startsWith('data:')?img:''}">`;$('crow').appendChild(d)}
+async function readColorFile(inp){const f=inp.files[0];if(!f)return;try{const u=await file2small(f);const row=inp.closest('.crow');row.querySelector('.cdata').value=u;const im=row.querySelector('.cp');im.src=u;im.style.display='block'}catch(e){toast('Image illisible')}}
 function parseSizes(str){const o={};String(str||'').split(/\s+/).forEach(p=>{const[a,b]=p.split(':');if(a)o[a.trim().toUpperCase()]=+b||0});return o}
 let UPLOADED=[];
 function file2small(file){return new Promise(res=>{const img=new Image();const r=new FileReader();r.onload=e=>{img.onload=()=>{const max=900;let w=img.width,h=img.height;if(w>max){h=h*max/w;w=max}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',.75))};img.src=e.target.result};r.readAsDataURL(file)})}
@@ -45,7 +46,7 @@ for(const f of fs){try{const u=await file2small(f);UPLOADED.push(u);$('pprev').i
 if(!UPLOADED.length)toast('Images illisibles');}
 function saveP(e){e.preventDefault();const urlImgs=[...document.querySelectorAll('.pimg')].map(i=>i.value.trim()).filter(Boolean);
 const imgs=[...UPLOADED,...urlImgs].slice(0,5);
-const colors=[...document.querySelectorAll('.crow')].map(r=>({name:r.querySelector('.cn').value||'Unique',hex:r.querySelector('.ch').value,sizes:parseSizes(r.querySelector('.cs').value)}));
+const colors=[...document.querySelectorAll('.crow')].slice(0,5).map(r=>({name:r.querySelector('.cn').value||'Unique',hex:r.querySelector('.ch').value,img:r.querySelector('.cdata').value||r.querySelector('.ci').value.trim(),sizes:parseSizes(r.querySelector('.cs').value)}));
 if(!colors.length)colors.push({name:'Unique',hex:'#ffffff',sizes:{TU:10}});
 let ps=DB.get('bmb_products_v2',[]);const id=$('p_id').value||('p'+Date.now());
 const obj={id,name:$('p_name').value,cat:$('p_cat').value,price:+$('p_price').value,old:+$('p_old').value||0,desc:$('p_desc').value,images:imgs,emoji:$('p_emoji').value||'👕',colors,trend:$('p_trend').checked,isnew:$('p_new').checked};
@@ -53,7 +54,7 @@ const i=ps.findIndex(x=>x.id===id);i>=0?ps[i]=obj:ps.unshift(obj);DB.set('bmb_pr
 e.target.reset();UPLOADED=[];$('pprev').innerHTML='';$('crow').innerHTML='';$('p_id').value='';$('p_files').value='';addColor();load();toast('Article enregistré ✓')}
 function editP(id){const p=DB.get('bmb_products_v2',[]).find(x=>x.id===id);if(!p)return;$('p_id').value=p.id;$('p_name').value=p.name;$('p_cat').value=p.cat;$('p_price').value=p.price;$('p_old').value=p.old||'';$('p_desc').value=p.desc||'';$('p_emoji').value=p.emoji||'';
 const ims=document.querySelectorAll('.pimg');ims.forEach((inp,i)=>inp.value=(p.images||[])[i]||'');$('p_trend').checked=!!p.trend;$('p_new').checked=!!p.isnew;
-$('crow').innerHTML='';(p.colors||[]).forEach(c=>addColor(c.name,c.hex,Object.entries(c.sizes||{}).map(([k,v])=>k+':'+v).join(' ')));tab('prods',document.querySelectorAll('.side a')[1]);window.scrollTo(0,0)}
+$('crow').innerHTML='';(p.colors||[]).forEach(c=>addColor(c.name,c.hex,Object.entries(c.sizes||{}).map(([k,v])=>k+':'+v).join(' '),c.img||''));tab('prods',document.querySelectorAll('.side a')[1]);window.scrollTo(0,0)}
 function delP(id){DB.set('bmb_products_v2',DB.get('bmb_products_v2',[]).filter(x=>x.id!==id));load()}
 function st(i,v){const o=DB.get('bmb_orders',[]);o[i].status=v;DB.set('bmb_orders',o);load()}
 function delO(i){const o=DB.get('bmb_orders',[]);o.splice(i,1);DB.set('bmb_orders',o);load()}
