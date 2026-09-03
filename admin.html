@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — BMB WEAR</title><link rel="stylesheet" href="assets/style.css?v=3"></head>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — BMB WEAR</title><link rel="stylesheet" href="assets/style.css?v=4"></head>
 <body>
 <div id="lock" style="min-height:100dvh;display:grid;place-items:center"><form class="box" style="min-width:300px" onsubmit="unlock(event)"><h2>BMB ADMIN</h2><input id="apass" type="password" placeholder="Mot de passe (bmb2026)"><button class="btn" style="width:100%">Entrer</button><p><a href="index.html">← Site</a></p></form></div>
 <div class="adm" id="adm" style="display:none"><div class="side"><h3>BMB<span style="background:#fff;color:#000;padding:.1rem .4rem">ADMIN</span></h3>
@@ -29,9 +29,9 @@
 <form class="box" onsubmit="saveShip(event)"><label>Dakar Centre</label><input id="s_dk" type="number"><label>Banlieue</label><input id="s_bn" type="number"><label>Régions</label><input id="s_rg" type="number"><label>Offerte dès</label><input id="s_free" type="number"><label>Wave</label><input id="s_wv"><label>Orange Money</label><input id="s_om"><label>Free Money</label><input id="s_fm"><label>Topic ntfy (notif commandes — installe l'app ntfy et abonne-toi à ce topic)</label><input id="s_ntfy" placeholder="bmb-wear-orders">
 <hr style="border-color:#2a2a2a;margin:1rem 0"><h3>Base durable — Supabase (photos illimitées)</h3>
 <p><small>1) Crée un projet sur supabase.com → 2) SQL Editor → colle <b>supabase/schema.sql</b> du repo → Run → 3) colle ici URL + clé anon (Project Settings → API).</small></p>
-<label>Supabase URL</label><input id="s_url" placeholder="https://xxx.supabase.co"><label>Clé anon</label><input id="s_key" placeholder="eyJ..."><div style="display:flex;gap:.5rem"><button type="button" class="btn ghost" onclick="testCloud()">Tester</button><button class="btn" style="flex:1">Sauver</button></div><p><small id="cloud_st"></small></p></form></div>
+<label>Supabase URL</label><input id="s_url" placeholder="https://xxx.supabase.co"><label>Clé anon</label><input id="s_key" placeholder="eyJ..."><div style="display:flex;gap:.5rem"><button type="button" class="btn ghost" onclick="testCloud()">Tester</button><button class="btn" style="flex:1">Sauver</button></div><p><small id="cloud_st"></small></p><div style="display:flex;gap:.5rem;margin-top:.5rem"><button type="button" class="btn ghost" onclick="pushAll()">⬆ Pousser tout le catalogue vers le cloud</button></div></form></div>
 </div></div><div class="toast" id="toast"></div>
-<script src="assets/db.js?v=3"></script>
+<script src="assets/db.js?v=4"></script>
 <script>
 const DB={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 const $=id=>document.getElementById(id);
@@ -84,6 +84,6 @@ const sh=DB.get('bmb_ship',{dk:2000,bn:3000,rg:5000,free:50000,wv:'77 478 98 75'
 $('s_dk').value=sh.dk;$('s_bn').value=sh.bn;$('s_rg').value=sh.rg;$('s_free').value=sh.free;$('s_wv').value=sh.wv;$('s_om').value=sh.om;$('s_fm').value=sh.fm;$('s_ntfy').value=DB.get('bmb_ntfy','bmb-wear-orders');
 const cc0=JSON.parse(localStorage.getItem('bmb_cloud')||'null');if(cc0){$('s_url').value=cc0.url||'';$('s_key').value=cc0.key||'';$('cloud_st').textContent='Cloud actif ✓';syncFromCloud()}}
 addColor('Noir','#000000','S:5 M:5 L:5 XL:5');
-async function syncFromCloud(){if(!Cloud.on())return;try{const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);const os=await Cloud.fetchOrders();if(os&&os.length){const local=DB.get('bmb_orders',[]);const nums=new Set(local.map(o=>o.num));os.forEach(o=>{if(!nums.has(o.num))local.push(o)});DB.set('bmb_orders',local)}load();toast('Cloud synchronisé ✓')}}catch(e){toast('Sync cloud impossible')}}
+async function pushAll(){if(!Cloud.on())return toast('Configure URL + clé puis Teste');toast('Envoi en cours...');try{const ps=DB.get('bmb_products_v2',[]);for(const p of ps){await Cloud.saveProduct(p)}toast('Catalogue synchronisé : '+ps.length+' articles ✓')}catch(e){toast('Échec sync — vérifie schema.sql + clé')}}async function syncFromCloud(){if(!Cloud.on())return;try{const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);const os=await Cloud.fetchOrders();if(os&&os.length){const local=DB.get('bmb_orders',[]);const nums=new Set(local.map(o=>o.num));os.forEach(o=>{if(!nums.has(o.num))local.push(o)});DB.set('bmb_orders',local)}load();toast('Cloud synchronisé ✓')}}catch(e){toast('Sync cloud impossible')}}
 if(sessionStorage.bmb_admin)show();
 </script></body></html>
