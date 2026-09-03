@@ -68,7 +68,8 @@ h1 em{font-style:normal;-webkit-text-stroke:1.5px #fff;color:transparent}
 .coll .bg{position:absolute;inset:0;display:grid;place-items:center;font-size:4.5rem;background:linear-gradient(135deg,#232323,#050505)}
 .coll .bg img{width:100%;height:100%;object-fit:cover;object-position:center 30%}
 .coll .tx{position:relative;padding:1.2rem;background:linear-gradient(transparent,rgba(0,0,0,.92));width:100%}
-.coll .tx h3{font-size:1.25rem;text-transform:uppercase}.coll .tx p{color:#bbb;font-size:.85rem;margin:.25rem 0 .7rem}
+.coll .tx h3{font-size:1.25rem;text-transform:uppercase}.coll .tx p{color:#bbb;font-size:.85rem;margin:.3rem 0 .9rem}
+.coll .tx .btn{display:inline-block;margin-top:.2rem}
 .foot{max-width:var(--max);margin:auto;padding:2.5rem 1rem;display:grid;grid-template-columns:2fr 1fr 1fr;gap:2rem;color:var(--mut);font-size:.9rem}
 .foot nav{display:flex;flex-direction:column;gap:.55rem}.foot nav a{padding:.15rem 0}.foot nav a:hover{color:#fff}
 .contact-grid,.track-grid,.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
