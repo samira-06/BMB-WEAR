@@ -1,5 +1,5 @@
 const CFG={zones:[{n:'Dakar Centre',f:2000},{n:'Banlieue',f:3000},{n:'Régions',f:5000}],free:50000,pay:{'Wave':'77 478 98 75','Orange Money':'77 478 98 75','Free Money':'76 443 02 18'},wa:'221774789875'};
-const QUART={ 'Dakar Centre (2000)':['Plateau','Médina','Fann','Point E','Almadies','Ngor','Ouakam','Yoff','Mermoz','Sacré-Cœur','Liberté 1-6','Sicap','HLM','Grand Dakar','Fass','Colobane','Pikine (Dakar)'], 'Banlieue (3000)':['Parcelles Assainies','Grand Yoff','Pikine','Guédiawaye','Keur Massar','Malika','Yeumbeul','Thiaroye','Mbao','Rufisque','Bargny','Diamniadio','Sangalkam','Keur Ndiaye Lô'], 'Régions (5000)':['Thiès','Mbour','Saly','Saint-Louis','Kaolack','Ziguinchor','Touba','Tivaouane','Louga','Diourbel','Kolda','Tambacounda','Matam','Fatick']};
+const QUART={'Dakar Centre':['Plateau','Rebeuss','Médina','Fann','Fann Hock','Point E','Amitié','Almadies','Ngor','Ouakam','Yoff','Ouest Foire','Nord Foire','Virage','Mermoz','Sacré-Cœur','Liberté 1-6','Sicap','Dieuppeul','Derklé','Castors','HLM','Grand Dakar','Fass','Colobane','Bel Air','Hann','Maristes','Dalifort'],'Banlieue':['Parcelles Assainies','Grand Yoff','Cambérène','Golf Sud','Sam Notaire','Pikine','Pikine Icotaf','Guinaw Rails','Thiaroye','Djiddah','Mbao','Keur Mbaye Fall','Guédiawaye','Malika','Yeumbeul','Keur Massar','Jaxaay','Kounoune','Sangalkam','Keur Ndiaye Lô','Tivaouane Peulh','Bambilor','Rufisque','Bargny','Sébikotane','Diamniadio'],'Régions':['Thiès','Khombole','Pout','Mbour','Saly','Joal','Nguékhokh','Saint-Louis','Richard-Toll','Dagana','Podor','Louga','Linguère','Touba','Mbacké','Diourbel','Bambey','Kaolack','Kaffrine','Nioro','Fatick','Foundiougne','Sokone','Ziguinchor','Bignona','Oussouye','Kolda','Vélingara','Sédhiou','Tambacounda','Kédougou','Matam','Kanel']};
 function notifyNtfy(o){try{const t=DB.get('bmb_ntfy','bmb-wear-orders');fetch('https://ntfy.sh/'+encodeURIComponent(t),{method:'POST',body:'🧢 '+o.num+' — '+o.nom+' ('+o.tel+') | '+o.total.toLocaleString()+'F | '+(o.quartier||'')+' '+(o.zone||'')+' | '+o.pay+' | '+o.items.map(i=>i.name+' '+i.color+'/'+i.size+'x'+i.qty).join(', ')}).catch(()=>{})}catch(e){}}
 const SEED=[
 {id:'p1',name:'Windbreaker Brazil 94',cat:'windbreaker',price:25000,old:32000,trend:1,isnew:1,emoji:'🇧🇷',desc:'Coupe-vent Brazil 94, tissu déperlant, broderie poitrine.',images:[],colors:[{name:'Jaune/Vert',hex:'#d4ff00',sizes:{S:4,M:8,L:6,XL:3}},{name:'Noir',hex:'#111111',sizes:{S:2,M:2,L:1,XL:0}}]},
@@ -73,7 +73,11 @@ function setPay(b,v){pay=v;document.querySelectorAll('.pay button').forEach(x=>x
 function openCheckout(){if(!cart.length)return toast('Panier vide');$('drawer')?.classList.remove('open');$('checkout')?.classList.add('open');sum()}
 function closeM(id){$(id)?.classList.remove('open')}
 function shipF(z){const m=String(z||'').match(/(\d[\d ]*)/);if(m)return +m[1].replace(/\s/g,'');const f=CFG.zones.find(x=>z&&z.includes(x.n));return f?f.f:2000}
-function fillQ(){const s=$('c_quart');if(!s)return;if(s.options.length>1)return;s.innerHTML='<option value="">— Choisir quartier / ville —</option>'+Object.entries(QUART).map(([z,qs])=>`<optgroup label="${z}">${qs.map(q=>`<option value="${q}|${z}">${q}</option>`).join('')}</optgroup>`).join('')}
+function shipCfg(){return Object.assign({dk:2000,bn:3000,rg:5000,free:50000},DB.get('bmb_ship',{}))}
+function buildZones(){const sh=shipCfg();CFG.zones=[{n:'Dakar Centre',f:sh.dk},{n:'Banlieue',f:sh.bn},{n:'Régions',f:sh.rg}];CFG.free=sh.free;
+const fee=n=>n==='Banlieue'?sh.bn:(n==='Régions'?sh.rg:sh.dk);
+const zs=$('c_zone');if(zs)zs.innerHTML=CFG.zones.map(z=>`<option>${z.n} (${z.f.toLocaleString()} F)</option>`).join('');
+const q=$('c_quart');if(q)q.innerHTML='<option value="">— Choisir quartier / ville —</option>'+Object.entries(QUART).map(([zn,qs])=>`<optgroup label="${zn} — ${fee(zn).toLocaleString()} F">${qs.map(x=>`<option value="${x}|${zn} (${fee(zn).toLocaleString()} F)">${x}</option>`).join('')}</optgroup>`).join('')}
 function syncZone(){const q=$('c_quart')?.value||'';if(q&&q.includes('|')){const z=q.split('|')[1];const zs=$('c_zone');if(zs)zs.value=z}sum()}
 function sum(){if(!$('osum'))return;let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF($('c_zone')?.value||'');if(st>=CFG.free)s=0;
 $('osum').innerHTML=`Sous-total ${st.toLocaleString()} + Livraison ${s.toLocaleString()} = <b style="color:#fff">${(st+s).toLocaleString()} FCFA</b> via ${pay}<br><small>Wave/OM: ${CFG.pay['Wave']} • Free: ${CFG.pay['Free Money']}</small>`}
@@ -116,7 +120,7 @@ try{const tp=DB.get('bmb_ntfy','bmb-wear-orders');fetch('https://ntfy.sh/'+encod
 e.target.reset();toast('Message envoyé ✓ — on te répond vite')}
 const io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&x.target.classList.add('v')),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-updCart();renderAcc();fillQ();$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
+updCart();renderAcc();buildZones();$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
 async function boot(){renderShop();renderTrend();try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);renderShop();renderTrend()}}}catch(e){}}
 boot();
 setInterval(async()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length&&JSON.stringify(ps)!==JSON.stringify(DB.get('bmb_products_v2',[]))){DB.set('bmb_products_v2',ps);renderShop();renderTrend();toast('Nouveautés synchronisées')}}}catch(e){}},45000);
