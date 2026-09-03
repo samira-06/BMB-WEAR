@@ -6,11 +6,16 @@ const SEED=[
 {id:'p2',name:'Ensemble Nike Tech Fleece',cat:'nike',price:35000,old:42000,trend:1,isnew:1,emoji:'👟',desc:'Haut + pantalon Tech Fleece, coupe regular.',images:[],colors:[{name:'Noir',hex:'#000000',sizes:{S:6,M:10,L:8,XL:5}},{name:'Gris',hex:'#888888',sizes:{S:3,M:4,L:4,XL:2}}]},
 {id:'p3',name:'Ensemble Adidas Adicolor',cat:'adidas',price:32000,old:38000,trend:1,isnew:1,emoji:'⚡',desc:'Trefoil brodé, bandes mythiques.',images:[],colors:[{name:'Noir',hex:'#000000',sizes:{S:5,M:5,L:5,XL:5}},{name:'Blanc',hex:'#ffffff',sizes:{S:1,M:2,L:1,XL:1}}]},
 {id:'p4',name:'Windbreaker Brazil Retro 2002',cat:'windbreaker',price:22000,old:0,trend:0,isnew:1,emoji:'💚',desc:'Edition retro 2002.',images:[],colors:[{name:'Vert',hex:'#00a651',sizes:{S:8,M:8,L:8,XL:8}}]},
-{id:'p5',name:'Bonnet BMB + Chaussettes',cat:'accessoire',price:8000,old:10000,trend:0,isnew:1,emoji:'🧢',desc:'Pack accessoires.',images:[],colors:[{name:'Noir',hex:'#000000',sizes:{TU:12}}]}];
+{id:'p5',name:'Bonnet BMB + Chaussettes',cat:'accessoire',price:8000,old:10000,trend:0,isnew:1,emoji:'🧢',desc:'Pack accessoires.',images:[],colors:[{name:'Noir',hex:'#000000',sizes:{TU:12}}]},
+{id:'p6',name:'Adidas Samba Blanc Marron',cat:'chaussure',price:30000,old:36000,trend:1,isnew:1,emoji:'👟',key:'samba',desc:'Samba cuir blanc, bandes marron, semelle gomme.',images:['assets/img/samba.jpg'],colors:[{name:'Blanc/Marron',hex:'#e5d9c5',img:'assets/img/samba.jpg',sizes:{40:5,41:5,42:5,43:5,44:5,45:5}}]},
+{id:'p7',name:'New Balance 530 Blanche',cat:'chaussure',price:32000,old:0,trend:1,isnew:1,emoji:'👟',key:'530',desc:'NB 530 mesh blanc, confort running.',images:['assets/img/nb-530.jpg'],colors:[{name:'Blanc',hex:'#f5f5f5',img:'assets/img/nb-530.jpg',sizes:{40:5,41:5,42:5,43:5,44:5,45:5}}]},
+{id:'p8',name:'Adidas Campus',cat:'chaussure',price:28000,old:34000,trend:1,isnew:1,emoji:'👟',key:'campus',desc:'Campus suede, 2 coloris.',images:['assets/img/campus-vert.jpg','assets/img/campus-noir.jpg'],colors:[{name:'Vert',hex:'#1a6b4a',img:'assets/img/campus-vert.jpg',sizes:{40:5,41:5,42:5,43:5,44:5,45:5}},{name:'Marron',hex:'#6b3a24',img:'assets/img/campus-noir.jpg',sizes:{40:5,41:5,42:5,43:5,44:5,45:5}}]}];
 const DB={get(k,f){try{const v=JSON.parse(localStorage.getItem(k));return v??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 const PHOTO_MAP={p1:['assets/img/windbreaker-brazil-94.jpg'],p2:['assets/img/nike-tech-noir-gris.jpg','assets/img/nike-tech-marron-beige.jpg'],p3:['assets/img/adidas-adicolor.jpg'],p4:['assets/img/brazil-retro-blanc.jpg','assets/img/brazil-tech.jpg','assets/img/brazil-black.jpg']};
 if(!DB.get('bmb_products_v2'))DB.set('bmb_products_v2',SEED);
-(function(){const ps=DB.get('bmb_products_v2',[]);let ch=false;ps.forEach(p=>{const m=PHOTO_MAP[p.id];if(m&&!(p.images||[]).length){p.images=m;ch=true}});if(ch)DB.set('bmb_products_v2',ps)})();
+(function(){const ps=DB.get('bmb_products_v2',[]);let ch=false;ps.forEach(p=>{const m=PHOTO_MAP[p.id];if(m&&!(p.images||[]).length){p.images=m;ch=true}});
+SEED.forEach(s=>{if(!ps.find(p=>p.id===s.id)&&!(s.key&&ps.find(p=>(p.name||'').toLowerCase().includes(s.key)))){ps.unshift(Object.assign({},s));ch=true}});
+if(ch)DB.set('bmb_products_v2',ps)})();
 if(!DB.get('bmb_orders'))DB.set('bmb_orders',[]);
 if(!DB.get('bmb_users'))DB.set('bmb_users',[]);
 let cat='all',pay='Wave',cart=DB.get('bmb_cart',[]),curP=null,curC=0,curS=null,curQ=1;
