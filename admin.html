@@ -23,7 +23,7 @@
 <div id="v-orders" style="display:none"><h1>Commandes</h1><div class="panel"><table><thead><tr><th>N° / Client</th><th>Articles</th><th>Total</th><th>Statut</th><th></th></tr></thead><tbody id="olist"></tbody></table></div></div>
 <div id="v-clients" style="display:none"><h1>Clients (1 compte / tel + email)</h1><div class="panel"><table><tbody id="clist"></tbody></table></div></div>
 <div id="v-ship" style="display:none"><h1>Livraison & Paiement (style SYTAM)</h1>
-<form class="box" onsubmit="saveShip(event)"><label>Dakar Centre</label><input id="s_dk" type="number"><label>Banlieue</label><input id="s_bn" type="number"><label>Régions</label><input id="s_rg" type="number"><label>Offerte dès</label><input id="s_free" type="number"><label>Wave</label><input id="s_wv"><label>Orange Money</label><input id="s_om"><label>Free Money</label><input id="s_fm"><button class="btn">Sauver</button></form></div>
+<form class="box" onsubmit="saveShip(event)"><label>Dakar Centre</label><input id="s_dk" type="number"><label>Banlieue</label><input id="s_bn" type="number"><label>Régions</label><input id="s_rg" type="number"><label>Offerte dès</label><input id="s_free" type="number"><label>Wave</label><input id="s_wv"><label>Orange Money</label><input id="s_om"><label>Free Money</label><input id="s_fm"><label>Topic ntfy (notif commandes — installe l'app ntfy et abonne-toi à ce topic)</label><input id="s_ntfy" placeholder="bmb-wear-orders"><button class="btn">Sauver</button></form></div>
 </div></div><div class="toast" id="toast"></div>
 <script>
 const DB={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
@@ -49,7 +49,7 @@ $('crow').innerHTML='';(p.colors||[]).forEach(c=>addColor(c.name,c.hex,Object.en
 function delP(id){DB.set('bmb_products_v2',DB.get('bmb_products_v2',[]).filter(x=>x.id!==id));load()}
 function st(i,v){const o=DB.get('bmb_orders',[]);o[i].status=v;DB.set('bmb_orders',o);load()}
 function delO(i){const o=DB.get('bmb_orders',[]);o.splice(i,1);DB.set('bmb_orders',o);load()}
-function saveShip(e){e.preventDefault();DB.set('bmb_ship',{dk:+$('s_dk').value,bn:+$('s_bn').value,rg:+$('s_rg').value,free:+$('s_free').value,wv:$('s_wv').value,om:$('s_om').value,fm:$('s_fm').value});toast('Sauvé ✓')}
+function saveShip(e){e.preventDefault();DB.set('bmb_ship',{dk:+$('s_dk').value,bn:+$('s_bn').value,rg:+$('s_rg').value,free:+$('s_free').value,wv:$('s_wv').value,om:$('s_om').value,fm:$('s_fm').value});DB.set('bmb_ntfy',$('s_ntfy').value.trim()||'bmb-wear-orders');toast('Sauvé ✓ — notifs ntfy: '+DB.get('bmb_ntfy',''))}
 function load(){const o=DB.get('bmb_orders',[]),p=DB.get('bmb_products_v2',[]),u=DB.get('bmb_users',[]);
 const ca=o.filter(x=>x.status!=='Annulée').reduce((a,x)=>a+x.total,0);
 $('k_ca').textContent=ca.toLocaleString()+' F';$('k_nb').textContent=o.length;$('k_wait').textContent=o.filter(x=>x.status==='En attente').length;
@@ -60,7 +60,7 @@ $('plist').innerHTML=p.map(x=>{const s=stockOf(x);return `<tr><td>${x.emoji} <b>
 $('olist').innerHTML=o.map((x,i)=>`<tr><td><b>${x.num}</b><br>${x.nom}<br><small>${x.tel}<br>${x.zone} ${x.adr||''}<br>${x.code?'Parrain:'+x.code:''}</small></td><td>${x.items.map(it=>`<small>${it.name} ${it.color}/${it.size} x${it.qty}</small>`).join('<br>')}</td><td>${x.total.toLocaleString()}<br><small>${x.pay}</small></td><td><select onchange="st(${i},this.value)">${['En attente','Confirmée','Livrée','Annulée'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}</select></td><td><button onclick="delO(${i})">✕</button></td></tr>`).join('')||'Aucune';
 $('clist').innerHTML=u.map(x=>`<tr><td>${x.name}<br><small>${x.tel} • ${x.email} • ${x.addr||''}</small></td></tr>`).join('')||'Aucun client';
 const sh=DB.get('bmb_ship',{dk:2000,bn:3000,rg:5000,free:50000,wv:'77 478 98 75',om:'77 478 98 75',fm:'76 443 02 18'});
-$('s_dk').value=sh.dk;$('s_bn').value=sh.bn;$('s_rg').value=sh.rg;$('s_free').value=sh.free;$('s_wv').value=sh.wv;$('s_om').value=sh.om;$('s_fm').value=sh.fm}
+$('s_dk').value=sh.dk;$('s_bn').value=sh.bn;$('s_rg').value=sh.rg;$('s_free').value=sh.free;$('s_wv').value=sh.wv;$('s_om').value=sh.om;$('s_fm').value=sh.fm;$('s_ntfy').value=DB.get('bmb_ntfy','bmb-wear-orders')}
 addColor('Noir','#000000','S:5 M:5 L:5 XL:5');
 if(sessionStorage.bmb_admin)show();
 </script></body></html>

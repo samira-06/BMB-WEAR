@@ -1,4 +1,6 @@
 const CFG={zones:[{n:'Dakar Centre',f:2000},{n:'Banlieue',f:3000},{n:'Régions',f:5000}],free:50000,pay:{'Wave':'77 478 98 75','Orange Money':'77 478 98 75','Free Money':'76 443 02 18'},wa:'221774789875'};
+const QUART={ 'Dakar Centre (2000)':['Plateau','Médina','Fann','Point E','Almadies','Ngor','Ouakam','Yoff','Mermoz','Sacré-Cœur','Liberté 1-6','Sicap','HLM','Grand Dakar','Fass','Colobane','Pikine (Dakar)'], 'Banlieue (3000)':['Parcelles Assainies','Grand Yoff','Pikine','Guédiawaye','Keur Massar','Malika','Yeumbeul','Thiaroye','Mbao','Rufisque','Bargny','Diamniadio','Sangalkam','Keur Ndiaye Lô'], 'Régions (5000)':['Thiès','Mbour','Saly','Saint-Louis','Kaolack','Ziguinchor','Touba','Tivaouane','Louga','Diourbel','Kolda','Tambacounda','Matam','Fatick']};
+function notifyNtfy(o){try{const t=DB.get('bmb_ntfy','bmb-wear-orders');fetch('https://ntfy.sh/'+encodeURIComponent(t),{method:'POST',body:'🧢 '+o.num+' — '+o.nom+' ('+o.tel+') | '+o.total.toLocaleString()+'F | '+(o.quartier||'')+' '+(o.zone||'')+' | '+o.pay+' | '+o.items.map(i=>i.name+' '+i.color+'/'+i.size+'x'+i.qty).join(', ')}).catch(()=>{})}catch(e){}}
 const SEED=[
 {id:'p1',name:'Windbreaker Brazil 94',cat:'windbreaker',price:25000,old:32000,trend:1,isnew:1,emoji:'🇧🇷',desc:'Coupe-vent Brazil 94, tissu déperlant, broderie poitrine.',images:[],colors:[{name:'Jaune/Vert',hex:'#d4ff00',sizes:{S:4,M:8,L:6,XL:3}},{name:'Noir',hex:'#111111',sizes:{S:2,M:2,L:1,XL:0}}]},
 {id:'p2',name:'Ensemble Nike Tech Fleece',cat:'nike',price:35000,old:42000,trend:1,isnew:1,emoji:'👟',desc:'Haut + pantalon Tech Fleece, coupe regular.',images:[],colors:[{name:'Noir',hex:'#000000',sizes:{S:6,M:10,L:8,XL:5}},{name:'Gris',hex:'#888888',sizes:{S:3,M:4,L:4,XL:2}}]},
@@ -61,13 +63,16 @@ function toggleMenu(){const m=$('mlinks');if(m)m.style.display=m.style.display==
 function setPay(b,v){pay=v;document.querySelectorAll('.pay button').forEach(x=>x.classList.remove('on'));b.classList.add('on');sum()}
 function openCheckout(){if(!cart.length)return toast('Panier vide');$('drawer')?.classList.remove('open');$('checkout')?.classList.add('open');sum()}
 function closeM(id){$(id)?.classList.remove('open')}
-function shipF(z){const f=CFG.zones.find(x=>z&&z.includes(x.n));return f?f.f:2000}
+function shipF(z){const m=String(z||'').match(/(\d[\d ]*)/);if(m)return +m[1].replace(/\s/g,'');const f=CFG.zones.find(x=>z&&z.includes(x.n));return f?f.f:2000}
+function fillQ(){const s=$('c_quart');if(!s)return;if(s.options.length>1)return;s.innerHTML='<option value="">— Choisir quartier / ville —</option>'+Object.entries(QUART).map(([z,qs])=>`<optgroup label="${z}">${qs.map(q=>`<option value="${q}|${z}">${q}</option>`).join('')}</optgroup>`).join('')}
+function syncZone(){const q=$('c_quart')?.value||'';if(q&&q.includes('|')){const z=q.split('|')[1];const zs=$('c_zone');if(zs)zs.value=z}sum()}
 function sum(){if(!$('osum'))return;let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF($('c_zone')?.value||'');if(st>=CFG.free)s=0;
 $('osum').innerHTML=`Sous-total ${st.toLocaleString()} + Livraison ${s.toLocaleString()} = <b style="color:#fff">${(st+s).toLocaleString()} FCFA</b> via ${pay}<br><small>Wave/OM: ${CFG.pay['Wave']} • Free: ${CFG.pay['Free Money']}</small>`}
-function confirmOrder(){const nom=$('c_nom')?.value.trim(),tel=$('c_tel')?.value.trim();if(!nom||!tel)return toast('Nom + téléphone requis');
+function confirmOrder(){const nom=$('c_nom')?.value.trim(),tel=$('c_tel')?.value.trim();const qv=$('c_quart')?.value||'';const quartier=qv.split('|')[0]||'';
+if(!nom||!tel)return toast('Nom + téléphone requis');if($('c_quart')&&!quartier)return toast('Choisis ton quartier');
 let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF($('c_zone').value);if(st>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
-const o={num,nom,tel,zone:$('c_zone').value,adr:$('c_adr').value,pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'En attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3};
-const all=DB.get('bmb_orders',[]);all.unshift(o);DB.set('bmb_orders',all);
+const o={num,nom,tel,zone:$('c_zone').value,quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'En attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3};
+const all=DB.get('bmb_orders',[]);all.unshift(o);DB.set('bmb_orders',all);notifyNtfy(o);
 decrStock(cart);cart=[];DB.set('bmb_cart',cart);updCart();closeM('checkout');
 if($('s_txt'))$('s_txt').innerHTML=`Merci ${nom} ! <b>${num}</b> — <b>${o.total.toLocaleString()} FCFA</b><br>Envoie ${pay} au <b>${CFG.pay[pay]}</b> + capture WhatsApp.<br><span style="color:#f59e0b">⏳ 1h pour confirmer sinon annulation auto.</span><br><a class="btn" style="margin-top:.6rem;display:inline-block" href="https://wa.me/${CFG.wa}?text=${encodeURIComponent('Paiement '+num+' '+o.total)}">WhatsApp</a><br><small>Suivi: page Suivre avec ${tel} + ${num}</small>`;
 $('success')?.classList.add('open');renderAcc()}
@@ -90,4 +95,4 @@ else{const f=DB.get('bmb_favs_'+u.tel,[]);$('acc_box').innerHTML=`<div class="pa
 function contact(e){e.preventDefault();window.open('https://wa.me/'+CFG.wa+'?text='+encodeURIComponent('Bonjour BMB Wear ! '+(document.getElementById('ct_msg')?.value||'')),'_blank')}
 const io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&x.target.classList.add('v')),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-renderShop();renderTrend();updCart();renderAcc();$('c_zone')?.addEventListener('change',sum);
+renderShop();renderTrend();updCart();renderAcc();fillQ();$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
