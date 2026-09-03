@@ -33,6 +33,11 @@ let f=arr.filter(p=>(cat==='all'||p.cat===cat)&&p.name.toLowerCase().includes(q)
 if(s==='asc')f.sort((a,b)=>a.price-b.price);if(s==='desc')f.sort((a,b)=>b.price-a.price);
 $('grid').innerHTML=f.map(card).join('')||'Aucun produit.';if($('nprod'))$('nprod').textContent=f.length+' articles'}
 function renderTrend(){if(!$('trend'))return;$('trend').innerHTML=DB.get('bmb_products_v2',[]).filter(p=>p.trend).map(card).join('')}
+const COLLS=[{k:'brazil',cat:'windbreaker',tag:'Brazil',t:'Windbreaker',d:'Coupe-vent jaune, vert, noir.'},{k:'nike',cat:'nike',tag:'Nike',t:'Ensembles Nike',d:'Tech fleece & dri-fit.'},{k:'adidas',cat:'adidas',tag:'Adidas',t:'Ensembles Adidas',d:'Adicolor & tiro.'}];
+function renderColls(){const el=$('colls');if(!el)return;const ps=DB.get('bmb_products_v2',[]);
+el.innerHTML=COLLS.map(c=>{const p=ps.find(x=>x.coll===c.k)||ps.find(x=>x.cat===c.cat);const img=p?coverOf(p):'';
+return `<a class="coll" href="boutique.html?cat=${c.cat}"><div class="bg">${img?`<img src="${img}" alt="">`:c.tag[0]}</div><div class="tx"><span class="tag">${c.tag}</span><h3>${p?p.name:c.t}</h3><p>${p?p.price.toLocaleString()+' FCFA':c.d}</p><span class="btn">Shopper</span></div></a>`}).join('')}
+function applyCatQuery(){try{const q=new URLSearchParams(location.search).get('cat');if(q&&$('grid')&&['windbreaker','nike','adidas','chaussure','accessoire'].includes(q)){cat=q;document.querySelectorAll('#cats button').forEach(x=>x.classList.toggle('on',x.dataset.c===q))}}catch(e){}}
 function quickAdd(id){const p=DB.get('bmb_products_v2',[]).find(x=>x.id===id);if(!p)return;const c=(p.colors||[])[0];const sz=c?Object.keys(c.sizes||{})[0]:'TU';openP(id);if(c){curC=0;selC(0);if(sz)selS(sz)}}
 function openP(id){const p=DB.get('bmb_products_v2',[]).find(x=>x.id===id);if(!p)return;curP=p;curC=0;curS=null;curQ=1;drawP();$('pdetail')?.classList.add('open')}
 function galList(p,ci){const c=(p.colors||[])[ci];const L=[];if(c&&c.img)L.push(c.img);(p.images||[]).forEach(u=>{if(u&&!L.includes(u))L.push(u)});(p.colors||[]).forEach((x,i)=>{if(i!==ci&&x.img&&!L.includes(x.img))L.push(x.img)});return L.slice(0,6)}
@@ -121,6 +126,6 @@ e.target.reset();toast('Message envoyé ✓ — on te répond vite')}
 const io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&x.target.classList.add('v')),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 updCart();renderAcc();buildZones();$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
-async function boot(){renderShop();renderTrend();try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);renderShop();renderTrend()}}}catch(e){}}
+async function boot(){applyCatQuery();renderShop();renderTrend();renderColls();try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);renderShop();renderTrend();renderColls()}}}catch(e){}}
 boot();
-setInterval(async()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length&&JSON.stringify(ps)!==JSON.stringify(DB.get('bmb_products_v2',[]))){DB.set('bmb_products_v2',ps);renderShop();renderTrend();toast('Nouveautés synchronisées')}}}catch(e){}},45000);
+setInterval(async()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length&&JSON.stringify(ps)!==JSON.stringify(DB.get('bmb_products_v2',[]))){DB.set('bmb_products_v2',ps);renderShop();renderTrend();renderColls();toast('Nouveautés synchronisées')}}}catch(e){}},45000);

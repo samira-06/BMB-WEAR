@@ -10,8 +10,8 @@ async req(path,opt){const c=this.cfg();const r=await fetch(c.url.replace(/\/$/,'
 async photos(){if(!this.on())return [];try{return await this.req('products?select=id,name&order=created_at.desc&limit=1000')||[]}catch(e){return[]}},
 async fetchProducts(){const ps=await this.req('products?select=*&order=created_at.desc');const out=[];
 for(const p of ps){let cols=[];try{cols=await this.req('colors?product_id=eq.'+encodeURIComponent(p.id)+'&select=*')}catch(e){}
-out.push({id:p.id,name:p.name,cat:p.cat,price:p.price,old:p.old_price,desc:p.description,images:p.images||[],emoji:p.emoji||'👕',trend:!!p.trend,isnew:!!p.is_new,colors:cols.map(c=>({name:c.name,hex:c.hex,img:c.img||'',sizes:c.sizes||{}}))})}return out},
-async saveProduct(p){const body={id:p.id,name:p.name,cat:p.cat,price:p.price,old_price:p.old||0,description:p.desc||'',images:p.images||[],emoji:p.emoji||'👕',trend:!!p.trend,is_new:!!p.isnew};
+out.push({id:p.id,name:p.name,cat:p.cat,price:p.price,old:p.old_price,desc:p.description,coll:p.coll||'',images:p.images||[],emoji:p.emoji||'👕',trend:!!p.trend,isnew:!!p.is_new,colors:cols.map(c=>({name:c.name,hex:c.hex,img:c.img||'',sizes:c.sizes||{}}))})}return out},
+async saveProduct(p){const body={id:p.id,name:p.name,cat:p.cat,price:p.price,old_price:p.old||0,description:p.desc||'',coll:p.coll||'',images:p.images||[],emoji:p.emoji||'👕',trend:!!p.trend,is_new:!!p.isnew};
 await this.req('products',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify(body)});
 await this.req('colors?product_id=eq.'+encodeURIComponent(p.id),{method:'DELETE'});
 for(const c of (p.colors||[]))await this.req('colors',{method:'POST',body:JSON.stringify({product_id:p.id,name:c.name,hex:c.hex,img:c.img||'',sizes:c.sizes||{}})})},

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BMB WEAR — Accueil</title><link rel="stylesheet" href="assets/style.css?v=13"></head>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BMB WEAR — Accueil</title><link rel="stylesheet" href="assets/style.css?v=14"></head>
 <body><div class="topbar">BMB WEAR — Livraison offerte dès 50 000 FCFA</div>
 <header><nav class="nav"><a class="logo" href="index.html">BMB<span>WEAR</span></a>
 <div class="links" id="mlinks"><a href="index.html" class="active">Accueil</a><a href="boutique.html">Boutique</a><a href="suivi.html">Suivre</a><a href="compte.html">Compte</a><a href="contact.html">Contact</a></div>
@@ -9,11 +9,7 @@
 <div class="hero-cta"><a class="btn" href="boutique.html">Explorer la boutique</a><a class="btn ghost" href="boutique.html">Voir les drops ▶</a></div></div></section>
 <div class="marquee"><div>BMB WEAR • WINDBREAKER BRAZIL • NIKE • ADIDAS • NOIR & BLANC •</div></div>
 <section class="section reveal"><div class="sec-head"><div><h2>Univers BMB</h2><p>3 collections — clique pour filtrer la boutique.</p></div><a class="btn ghost" href="boutique.html">Tout voir</a></div>
-<div class="colls">
-<a class="coll" href="boutique.html"><div class="bg"><img src="assets/img/brazil-black.jpg" alt="Windbreaker Brazil" onerror="this.remove()"></div><div class="tx"><span class="tag">Brazil</span><h3>Windbreaker</h3><p>Coupe-vent jaune, vert, noir.</p><span class="btn">Shopper</span></div></a>
-<a class="coll" href="boutique.html"><div class="bg"><img src="assets/img/nike-tech-noir-gris.jpg" alt="Nike" onerror="this.remove()"></div><div class="tx"><span class="tag">Nike</span><h3>Ensembles Nike</h3><p>Tech fleece & dri-fit.</p><span class="btn">Shopper</span></div></a>
-<a class="coll" href="boutique.html"><div class="bg"><img src="assets/img/adidas-adicolor.jpg" alt="Adidas" onerror="this.remove()"></div><div class="tx"><span class="tag">Adidas</span><h3>Ensembles Adidas</h3><p>Adicolor & tiro.</p><span class="btn">Shopper</span></div></a>
-</div></section>
+<div class="colls" id="colls"></div></section>
 <section class="section reveal"><div class="sec-head"><h2>Tendances</h2><a class="btn ghost" href="boutique.html">Boutique</a></div><div class="grid" id="trend"></div></section>
 <section class="section faq reveal"><h2 style="text-align:center">FAQ</h2>
 <details open><summary><span class="n">01</span>Quels sont les délais et les tarifs de livraison partout au Sénégal ?<span class="pl">+</span></summary><p>Livraison en 72h maximum partout au Sénégal. Dakar Centre : 2 000 FCFA — Banlieue : 3 000 FCFA — Régions : 5 000 FCFA. Livraison <b>offerte dès 50 000 FCFA</b> d'achat. Au moment de commander, choisis ton quartier dans la liste : le prix se calcule automatiquement.</p></details>
@@ -26,4 +22,4 @@
 <div class="modal" id="pdetail"><div class="sheet wide"><div style="text-align:right"><button class="icon-btn" onclick="closeM('pdetail')">✕</button></div><div class="pd" id="pd_body"></div></div></div>
 <div class="modal" id="checkout"><div class="sheet"><h2>Finaliser la commande</h2><input id="c_nom" placeholder="Nom & Prénom"><input id="c_tel" placeholder="Téléphone"><label>Quartier / Ville (prix auto)</label><select id="c_quart" onchange="syncZone()"></select><label>Zone de livraison</label><select id="c_zone"><option>Dakar Centre (2000)</option><option>Banlieue (3000)</option><option>Régions (5000)</option></select><input id="c_adr" placeholder="Adresse complète (rue, villa, quartier)"><label>Paiement — Wave/OM: 77 478 98 75 • Free: 76 443 02 18</label><div class="pay"><button onclick="setPay(this,'Wave')" class="on">Wave</button><button onclick="setPay(this,'Orange Money')">Orange</button><button onclick="setPay(this,'Free Money')">Free</button></div><input id="c_code" placeholder="Code parrainage (optionnel)"><input id="c_note" placeholder="Notes (optionnel)"><div id="osum" style="margin:.8rem 0"></div><button class="btn" style="width:100%" onclick="confirmOrder()">Confirmer la commande</button><button class="btn ghost" style="width:100%;margin-top:.5rem" onclick="closeM('checkout')">Fermer</button></div></div>
 <div class="modal" id="success"><div class="sheet" style="text-align:center"><h2>✓ Commande confirmée !</h2><p id="s_txt"></p><button class="btn ghost" onclick="closeM('success')">Continuer</button></div></div>
-<div class="toast" id="toast"></div><script src="assets/db.js?v=13"></script><script src="assets/app.js?v=13"></script></body></html>
+<div class="toast" id="toast"></div><script src="assets/db.js?v=14"></script><script src="assets/app.js?v=14"></script></body></html>

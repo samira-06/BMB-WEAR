@@ -1,5 +1,9 @@
 -- BMB WEAR — base durable (Supabase Postgres + Storage)
 -- À coller dans Supabase > SQL Editor > New query > Run
+-- REJOUER après chaque mise à jour (les lignes IF NOT EXISTS ne cassent rien)
+
+alter table if exists products add column if not exists coll text default '';
+alter table if exists products add column if not exists description text default '';
 
 create table if not exists products (
   id text primary key,
