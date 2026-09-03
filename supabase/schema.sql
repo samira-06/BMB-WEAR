@@ -56,6 +56,15 @@ create table if not exists settings (
   value jsonb not null
 );
 
+create table if not exists messages (
+  id text primary key,
+  name text not null,
+  tel text not null,
+  msg text not null,
+  lu boolean default false,
+  created_at timestamptz default now()
+);
+
 -- Stockage photos durable (URLs publiques, pas de base64)
 insert into storage.buckets (id, name, public)
 values ('product-photos','product-photos', true)
@@ -84,6 +93,9 @@ create policy "anon write orders" on orders for all using (true) with check (tru
 alter table settings enable row level security;
 drop policy if exists "anon write settings" on settings;
 create policy "anon write settings" on settings for all using (true) with check (true);
+alter table messages enable row level security;
+drop policy if exists "anon write messages" on messages;
+create policy "anon write messages" on messages for all using (true) with check (true);
 
 -- Bucket public : lecture OK ; upload via anon
 drop policy if exists "public read photos" on storage.objects;
