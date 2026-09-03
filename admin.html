@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — BMB WEAR</title><link rel="stylesheet" href="assets/style.css?v=11"></head>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — BMB WEAR</title><link rel="stylesheet" href="assets/style.css?v=12"></head>
 <body>
 <div id="lock" style="min-height:100dvh;display:grid;place-items:center"><form class="box" style="min-width:300px" onsubmit="unlock(event)"><h2>BMB ADMIN</h2><input id="apass" type="password" placeholder="Mot de passe (bmb2026)"><button class="btn" style="width:100%">Entrer</button><p><a href="index.html">← Site</a></p></form></div>
 <div class="adm" id="adm" style="display:none"><div class="side"><h3>BMB<span style="background:#fff;color:#000;padding:.1rem .4rem">ADMIN</span></h3>
-<a class="on" onclick="tab('dash',this)">Dashboard</a><a onclick="tab('prods',this)">Produits</a><a onclick="tab('orders',this)">Commandes</a><a onclick="tab('msgs',this)">Messages <b id="m_badge"></b></a><a onclick="tab('clients',this)">Clients</a><a onclick="tab('ship',this)">Livraison/Paiement</a><a href="index.html">← Site</a><a onclick="logoutA()">Sortir</a></div>
+<a class="on" onclick="tab('dash',this)">Dashboard</a><a onclick="tab('prods',this)">Produits</a><a onclick="tab('orders',this)">Commandes</a><a onclick="tab('fin',this)">Finances</a><a onclick="tab('msgs',this)">Messages <b id="m_badge"></b></a><a onclick="tab('clients',this)">Clients</a><a onclick="tab('ship',this)">Livraison/Paiement</a><a href="index.html">← Site</a><a onclick="logoutA()">Sortir</a></div>
 <div style="padding:1.4rem;max-width:1000px">
 <div id="v-dash"><h1>Tableau de bord</h1><div class="kpis"><div class="kpi"><small>CA validé</small><strong id="k_ca">0</strong></div><div class="kpi"><small>Commandes</small><strong id="k_nb">0</strong></div><div class="kpi"><small>En attente</small><strong id="k_wait">0</strong></div><div class="kpi"><small>Stock faible</small><strong id="k_low">0</strong></div></div>
 <div class="panel"><h3>Alertes stock (<5 = bientôt rupture)</h3><div id="k_alert"></div></div>
@@ -24,6 +24,9 @@
 <input type="hidden" id="p_id"><button class="btn" style="width:100%;margin-top:.6rem">Enregistrer article</button></form>
 <div class="panel" style="margin-top:1rem"><div style="display:flex;gap:.5rem;margin-bottom:.6rem"><button class="btn ghost" onclick="exportCat()">⬇ Exporter le catalogue (JSON)</button></div><table><thead><tr><th>Article</th><th>Stock</th><th>Prix</th><th></th></tr></thead><tbody id="plist"></tbody></table></div></div>
 <div id="v-orders" style="display:none"><h1>Commandes</h1><div class="panel"><table><thead><tr><th>N° / Client</th><th>Articles</th><th>Total</th><th>Statut</th><th></th></tr></thead><tbody id="olist"></tbody></table></div></div>
+<div id="v-fin" style="display:none"><h1>Finances</h1><div class="kpis"><div class="kpi"><small>CA total (hors annulées)</small><strong id="f_ca">0</strong></div><div class="kpi"><small>Aujourd'hui</small><strong id="f_day">0</strong></div><div class="kpi"><small>7 derniers jours</small><strong id="f_week">0</strong></div><div class="kpi"><small>Panier moyen</small><strong id="f_avg">0</strong></div></div>
+<div class="track-grid"><div class="panel"><h3>Par paiement</h3><div id="f_pay"></div></div><div class="panel"><h3>Par statut</h3><div id="f_st"></div></div></div>
+<div class="panel" style="margin-top:1rem"><h3>Encaissements (livrées + confirmées)</h3><div id="f_list"></div></div></div>
 <div id="v-msgs" style="display:none"><h1>Messages clients</h1><div class="panel" id="mlist"></div></div>
 <div id="v-clients" style="display:none"><h1>Clients (1 compte / tel + email)</h1><div class="panel"><table><tbody id="clist"></tbody></table></div></div>
 <div id="v-ship" style="display:none"><h1>Livraison & Paiement (style SYTAM)</h1>
@@ -32,7 +35,7 @@
 <p><small>1) Crée un projet sur supabase.com → 2) SQL Editor → colle <b>supabase/schema.sql</b> du repo → Run → 3) colle ici URL + clé anon (Project Settings → API).</small></p>
 <label>Supabase URL</label><input id="s_url" placeholder="https://xxx.supabase.co"><label>Clé anon</label><input id="s_key" placeholder="eyJ..."><div style="display:flex;gap:.5rem"><button type="button" class="btn ghost" onclick="testCloud()">Tester</button><button class="btn" style="flex:1">Sauver</button></div><p><small id="cloud_st"></small></p><div style="display:flex;gap:.5rem;margin-top:.5rem"><button type="button" class="btn ghost" onclick="pushAll()">⬆ Pousser tout le catalogue vers le cloud</button></div></form></div>
 </div></div><div class="toast" id="toast"></div>
-<script src="assets/db.js?v=11"></script>
+<script src="assets/db.js?v=12"></script>
 <script>
 const DB={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 const $=id=>document.getElementById(id);
@@ -40,7 +43,7 @@ function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';set
 function unlock(e){e.preventDefault();if($('apass').value==='bmb2026'){sessionStorage.bmb_admin='1';show()}else toast('Mauvais mot de passe')}
 function logoutA(){sessionStorage.removeItem('bmb_admin');location.reload()}
 function show(){$('lock').style.display='none';$('adm').style.display='grid';load()}
-function tab(v,a){document.querySelectorAll('.side a').forEach(x=>x.classList.remove('on'));a.classList.add('on');['dash','prods','orders','msgs','clients','ship'].forEach(x=>$('v-'+x).style.display=x===v?'block':'none');if(v==='msgs')loadMsgs()}
+function tab(v,a){document.querySelectorAll('.side a').forEach(x=>x.classList.remove('on'));a.classList.add('on');['dash','prods','orders','fin','msgs','clients','ship'].forEach(x=>$('v-'+x).style.display=x===v?'block':'none');if(v==='msgs')loadMsgs();if(v==='fin')loadFin()}
 function stockOf(p){let t=0;(p.colors||[]).forEach(c=>Object.values(c.sizes||{}).forEach(q=>t+=+q||0));return t}
 function addColor(n='',h='#ffffff',s='S:5 M:5 L:5 XL:5',img=''){if(document.querySelectorAll('.crow').length>=5)return toast('Max 5 couleurs');const d=document.createElement('div');d.className='crow';d.style.cssText='border:1px solid #2a2a2a;border-radius:12px;padding:.6rem;margin:.5rem 0;display:grid;gap:.45rem';d.innerHTML=`<div class="prow"><input class="cn" value="${n}" placeholder="Nom couleur"><div style="display:flex;gap:.4rem;align-items:center"><input type="color" class="ch" value="${h}" style="width:56px"><button type="button" onclick="this.closest('.crow').remove()">✕</button></div></div><div class="prow"><label style="font-size:.72rem">📷 Photo couleur (local)<input type="file" class="cf" accept="image/*" onchange="readColorFile(this)"></label><input class="ci" value="${(img||'').startsWith('data:')?'':(img||'')}" placeholder="ou URL photo couleur"></div><div style="display:flex;gap:.4rem;align-items:center"><img class="cp" src="${img||''}" style="width:52px;height:62px;object-fit:cover;border-radius:10px;border:1px solid #333;${img?'':'display:none'}"><input class="cs" value="${s}" placeholder="Tailles S:5 M:5 L:5 XL:5 ou TU:10"></div><input type="hidden" class="cdata" value="${(img||'').startsWith('data:')?img:''}">`;$('crow').appendChild(d)}
 async function readColorFile(inp){const f=inp.files[0];if(!f)return;try{const u=await file2small(f);const row=inp.closest('.crow');row.querySelector('.cdata').value=u;const im=row.querySelector('.cp');im.src=u;im.style.display='block'}catch(e){toast('Image illisible')}}
@@ -66,6 +69,19 @@ e.target.reset();UPLOADED=[];$('pprev').innerHTML='';$('crow').innerHTML='';$('p
 function editP(id){const p=DB.get('bmb_products_v2',[]).find(x=>x.id===id);if(!p)return;$('p_id').value=p.id;$('p_name').value=p.name;$('p_cat').value=p.cat;$('p_price').value=p.price;$('p_old').value=p.old||'';$('p_desc').value=p.desc||'';$('p_emoji').value=p.emoji||'';
 const ims=document.querySelectorAll('.pimg');ims.forEach((inp,i)=>inp.value=(p.images||[])[i]||'');$('p_trend').checked=!!p.trend;$('p_new').checked=!!p.isnew;
 $('crow').innerHTML='';(p.colors||[]).forEach(c=>addColor(c.name,c.hex,Object.entries(c.sizes||{}).map(([k,v])=>k+':'+v).join(' '),c.img||''));tab('prods',document.querySelectorAll('.side a')[1]);window.scrollTo(0,0)}
+function pcover(p){return ((p.images||[]).find(Boolean))||(((p.colors||[]).map(c=>c.img).find(Boolean)))||''}
+function loadFin(){const o=DB.get('bmb_orders',[]).filter(x=>!String(x.status||'').includes('annul'));
+const tot=o.reduce((a,x)=>a+(+x.total||0),0);
+const day=new Date().toDateString();
+const d0=o.filter(x=>x.date&&new Date(x.date).toDateString()===day).reduce((a,x)=>a+(+x.total||0),0);
+const w0=Date.now()-7*864e5;
+const w1=o.filter(x=>{const t=Date.parse(x.date);return !isNaN(t)&&t>=w0}).reduce((a,x)=>a+(+x.total||0),0);
+$('f_ca').textContent=tot.toLocaleString()+' F';$('f_day').textContent=d0.toLocaleString()+' F';$('f_week').textContent=w1.toLocaleString()+' F';$('f_avg').textContent=(o.length?Math.round(tot/o.length):0).toLocaleString()+' F';
+const bp={};o.forEach(x=>{bp[x.pay||'?']=(bp[x.pay||'?']||0)+(+x.total||0)});
+$('f_pay').innerHTML=Object.entries(bp).map(([k,v])=>`<p>${k} : <b>${v.toLocaleString()} F</b> (${tot?Math.round(v*100/tot):0}%)</p>`).join('')||'—';
+const bs={};o.forEach(x=>{bs[x.status||'?']=(bs[x.status||'?']||0)+1});
+$('f_st').innerHTML=Object.entries(bs).map(([k,v])=>`<p>${k} : <b>${v}</b></p>`).join('')||'—';
+$('f_list').innerHTML=o.filter(x=>/livr|confirm/i.test(x.status||'')).slice(0,20).map(x=>`<p><b>${x.num}</b> ${x.nom} — ${(+x.total||0).toLocaleString()} F <small>(${x.pay||''} • ${x.date||''})</small></p>`).join('')||'Aucun encaissement'}
 function exportCat(){const s=JSON.stringify(DB.get('bmb_products_v2',[]),null,1);const b=new Blob([s],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='catalogue-bmb.json';a.click();toast('Exporté — envoie-moi ce fichier')}
 function delP(id){DB.set('bmb_products_v2',DB.get('bmb_products_v2',[]).filter(x=>x.id!==id));if(Cloud.on())Cloud.delProduct(id).catch(()=>{});load()}
 async function testCloud(){const u=$('s_url').value.trim(),k=$('s_key').value.trim();if(!u||!k)return toast('URL + clé requises');localStorage.setItem('bmb_cloud',JSON.stringify({url:u,key:k}));try{await Cloud.test();$('cloud_st').textContent='✓ Connecté — base durable active';toast('Cloud OK ✓')}catch(e){$('cloud_st').textContent='✕ Échec — vérifie URL/clé + schema.sql exécuté';toast('Échec connexion')}}
@@ -85,7 +101,7 @@ $('k_ca').textContent=ca.toLocaleString()+' F';$('k_nb').textContent=o.length;$(
 const lows=p.filter(x=>{let s=0;(x.colors||[]).forEach(c=>Object.values(c.sizes||{}).forEach(q=>s+=+q||0));return s<5});
 $('k_low').textContent=lows.length;$('k_alert').innerHTML=lows.map(x=>`<p>⚠️ ${x.name} — stock ${stockOf(x)}</p>`).join('')||'Stock OK';
 $('last').innerHTML=o.slice(0,5).map(x=>`<p><b>${x.num}</b> ${x.nom} ${x.total.toLocaleString()} — ${x.status}<br><small>${x.tel} • ${x.zone} • ${x.pay}</small></p>`).join('')||'Aucune';
-$('plist').innerHTML=p.map(x=>{const s=stockOf(x);return `<tr><td>${x.emoji} <b>${x.name}</b><br><small>${(x.colors||[]).map(c=>c.name).join(', ')}</small></td><td>${s===0?'<b style="color:red">RUPTURE</b>':s<5?'<b style="color:orange">'+s+' bientôt rupture</b>':s}</td><td>${x.price.toLocaleString()}</td><td><button onclick="editP('${x.id}')">Edit</button> <button onclick="delP('${x.id}')">✕</button></td></tr>`}).join('');
+$('plist').innerHTML=p.map(x=>{const s=stockOf(x);const cv=pcover(x);return `<tr><td><div style="display:flex;gap:.6rem;align-items:center">${cv?`<img src="${cv}" style="width:46px;height:56px;object-fit:cover;border-radius:9px;border:1px solid #333">`:`<span style="font-size:1.8rem">${x.emoji||'👕'}</span>`}<div><b>${x.name}</b><br><small>${(x.colors||[]).map(c=>c.name).join(', ')}</small></div></div></td><td>${s===0?'<b style="color:red">RUPTURE</b>':s<5?'<b style="color:orange">'+s+' bientôt rupture</b>':s}</td><td>${x.price.toLocaleString()}</td><td><button onclick="editP('${x.id}')">Edit</button> <button onclick="delP('${x.id}')">✕</button></td></tr>`}).join('');
 $('olist').innerHTML=o.map((x,i)=>`<tr><td><b>${x.num}</b><br>${x.nom}<br><small>${x.tel}<br>${x.zone} ${x.adr||''}<br>${x.code?'Parrain:'+x.code:''}</small></td><td>${x.items.map(it=>`<small>${it.name} ${it.color}/${it.size} x${it.qty}</small>`).join('<br>')}</td><td>${x.total.toLocaleString()}<br><small>${x.pay}</small></td><td><select onchange="st(${i},this.value)">${['Paiement en attente','Commande confirmée','En cours de traitement','En cours de livraison','Commande livrée','Commande annulée'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}</select></td><td><button onclick="delO(${i})">✕</button></td></tr>`).join('')||'Aucune';
 $('clist').innerHTML=u.map(x=>`<tr><td>${x.name}<br><small>${x.tel} • ${x.email} • ${x.addr||''}</small></td></tr>`).join('')||'Aucun client';
 const sh=DB.get('bmb_ship',{dk:2000,bn:3000,rg:5000,free:50000,wv:'77 478 98 75',om:'77 478 98 75',fm:'76 443 02 18'});
