@@ -116,9 +116,10 @@ footer{border-top:1px solid var(--line);margin-top:3rem;background:#050505}
 .step::before{content:"";position:absolute;left:16px;top:34px;bottom:0;width:2px;background:#262626}
 .step:last-child::before{display:none}
 .step.done::before{background:#fff}
-.sdot{width:34px;height:34px;border-radius:50%;border:2px solid #3a3a3a;background:#111;display:grid;place-items:center;font-size:.95rem;color:#777;z-index:1}
-.step.done .sdot{border-color:#fff;background:#fff;color:#000}
-.step.now .sdot{border-color:#fff;color:#fff;box-shadow:0 0 0 5px rgba(255,255,255,.12)}
+.sdot{width:16px;height:16px;border-radius:50%;border:2px solid #3a3a3a;background:transparent;justify-self:center;margin-top:5px;z-index:1;flex-shrink:0}
+.step.done .sdot{border-color:#fff;background:#fff}
+.step.now .sdot{border-color:#fff;background:transparent;position:relative;box-shadow:0 0 0 5px rgba(255,255,255,.12)}
+.step.now .sdot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:#fff}
 .step h4{font-size:.9rem;margin:0;line-height:1.35}.step small{color:#9a9a9a;font-size:.76rem}
 .step.now h4{color:#fff}
 .ord-sec{padding:1rem 1.2rem;border-top:1px solid #222}
@@ -128,13 +129,6 @@ footer{border-top:1px solid var(--line);margin-top:3rem;background:#050505}
 .kv{display:grid;grid-template-columns:1fr auto;gap:.3rem .8rem;font-size:.88rem}
 .kv span{color:#9a9a9a}.kv b{text-align:right;overflow-wrap:anywhere}
 .cancel-box{background:#1a0d0d;border:1px solid #7f1d1d;border-radius:14px;padding:1rem;margin-top:1rem;font-size:.9rem}
-.steps{display:flex;align-items:flex-start;margin:1.1rem 0;overflow-x:auto;padding-bottom:.3rem}
-.step{flex:1;min-width:96px;text-align:center;position:relative;font-size:.72rem;color:#777}
-.step .dot2{width:34px;height:34px;border-radius:50%;border:2px solid #333;background:#111;display:grid;place-items:center;margin:0 auto .4rem;font-size:1rem;color:#777}
-.step.done{color:#fff}.step.done .dot2{border-color:#fff;background:#fff;color:#000}
-.step.now{color:#fff}.step.now .dot2{border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.15)}
-.step::before{content:"";position:absolute;top:17px;left:-50%;width:100%;height:2px;background:#2a2a2a;z-index:-1}
-.step:first-child::before{display:none}.step.done::before{background:#fff}
 .ocard{background:#0d0d0d;border:1px solid #2e2e2e;border-radius:16px;overflow:hidden}
 .ocard .oh{padding:1rem 1.2rem;border-bottom:1px solid #222;display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;align-items:center}
 .pill{font-size:.72rem;font-weight:800;padding:.35rem .8rem;border-radius:999px;background:#fff;color:#000}
@@ -150,4 +144,4 @@ table{width:100%;border-collapse:collapse;font-size:.86rem}th,td{padding:.65rem;
 .foot{grid-template-columns:1fr;gap:1.4rem;text-align:left}.foot nav{flex-direction:row;flex-wrap:wrap;gap:.5rem}.foot nav a{background:#141414;border:1px solid var(--line);border-radius:999px;padding:.5rem .95rem;font-size:.85rem}
 .nav{padding:.7rem .8rem}.links{display:none;position:absolute;top:100%;left:0;right:0;background:#050505;border-bottom:1px solid var(--line);padding:.6rem .8rem;flex-direction:column;gap:0;z-index:60;margin-left:0}.links a{padding:.8rem .4rem;border-bottom:1px solid #161616;font-size:1rem}
 .nav-right{margin-left:auto}.burger{display:block}.adm{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.shop-tools{grid-template-columns:1fr}.filters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:.4rem}.filters button{flex-shrink:0}.card h3{font-size:.8rem}.colls{grid-template-columns:1fr}.coll{aspect-ratio:4/5}
-.ord-head{padding:.9rem}.steps{padding:1rem .9rem}.step{grid-template-columns:30px 1fr;gap:.6rem;padding-bottom:1.1rem}.step::before{left:14px;top:30px}.sdot{width:30px;height:30px;font-size:.85rem}.step h4{font-size:.85rem}.step small{font-size:.75rem}.ord-sec{padding:.9rem}.kv{font-size:.8rem;gap:.25rem .6rem}.oitem{font-size:.8rem}.oitem img{width:40px;height:48px}.pill{font-size:.66rem}}
+.ord-head{padding:.9rem}.steps{padding:1rem .9rem}.step{grid-template-columns:30px 1fr;gap:.6rem;padding-bottom:1.1rem}.step::before{left:14px;top:28px}.sdot{width:14px;height:14px}.step h4{font-size:.85rem}.step small{font-size:.75rem}.ord-sec{padding:.9rem}.kv{font-size:.8rem;gap:.25rem .6rem}.oitem{font-size:.8rem}.oitem img{width:40px;height:48px}.pill{font-size:.66rem}}

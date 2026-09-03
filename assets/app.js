@@ -16,7 +16,6 @@ if(!DB.get('bmb_users'))DB.set('bmb_users',[]);
 let cat='all',pay='Wave',cart=DB.get('bmb_cart',[]),curP=null,curC=0,curS=null,curQ=1;
 const $=id=>document.getElementById(id);
 const STEPS=['Paiement en attente','Commande confirmée','En cours de traitement','En cours de livraison','Commande livrée'];
-const STEP_ICON=['⏳','✔','📦','🚚','🎉'];
 function normStatus(s){s=String(s||'');if(s.includes('annul'))return 'Commande annulée';if(s==='En attente'||s.includes('Paiement'))return STEPS[0];if(s==='Confirmée'||s.includes('confirm'))return STEPS[1];if(s.includes('traitement'))return STEPS[2];if(s.includes('livraison')&&!s.includes('livr'))return STEPS[3];if(s==='Livrée'||s.includes('livr'))return STEPS[4];return STEPS[0]}
 function stepIdx(s){const i=STEPS.indexOf(normStatus(s));return i<0?0:i}
 function toast(m){const t=$('toast');if(!t)return;t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2400)}
@@ -95,7 +94,7 @@ if(!found){$('t_res').innerHTML='<div class="ord"><div class="ord-head"><b>Intro
 const o=found,st=normStatus(o.status),idx=stepIdx(st),cancelled=(st==='Commande annulée'),pillCls=cancelled?'sx':'s'+idx;
 let stepsHtml='';
 if(cancelled){stepsHtml='<div class="ord-sec"><div class="cancel-box"><b>X Commande annulee.</b><br>Veuillez appeler le service client au <b>+221 77 478 98 75</b> pour en savoir plus.</div></div>'}
-else{stepsHtml='<div class="ord-sec"><h5>Suivi de commande</h5><div class="steps">'+STEPS.map((s,i)=>'<div class="step '+(i<=idx?'done ':'')+(i===idx?'now':'')+'"><div class="sdot">'+(i<=idx?STEP_ICON[i]:'O')+'</div><div><h4>'+s+'</h4><small>'+(i===0?'Envoie Wave/OM au 77 478 98 75 + capture WhatsApp':(i===idx?'Etape actuelle':(i<idx?'Termine':'A venir')))+'</small></div></div>').join('')+'</div></div>'}
+else{stepsHtml='<div class="ord-sec"><h5>Suivi de commande</h5><div class="steps">'+STEPS.map((s,i)=>'<div class="step '+(i<=idx?'done ':'')+(i===idx?'now':'')+'"><div class="sdot"></div><div><h4>'+s+'</h4><small>'+(i===0?'Envoie Wave/OM au 77 478 98 75 + capture WhatsApp':(i===idx?'Etape actuelle':(i<idx?'Termine':'A venir')))+'</small></div></div>').join('')+'</div></div>'}
 let itemsHtml=(o.items||[]).map(function(i){const vis=i.img?'<img src="'+i.img+'">':'<span style="font-size:1.6rem">'+(i.emoji||'T')+'</span>';return '<div class="oitem">'+vis+'<div style="flex:1"><b>'+i.name+'</b><br><small style="color:#9a9a9a">'+(i.color||'')+' - Taille '+(i.size||'')+' - Qte '+i.qty+'</small></div><b>'+((i.price||0)*(i.qty||1)).toLocaleString()+' F</b></div>'}).join('');
 $('t_res').innerHTML='<div class="ord"><div class="ord-head"><span class="num">'+o.num+'</span><span class="pill '+pillCls+'">'+st+'</span></div><div class="ord-sec"><h5>Details commande</h5><div class="kv"><span>Client</span><b>'+o.nom+'</b><span>Telephone</span><b>'+o.tel+'</b><span>Livraison</span><b>'+(o.quartier||'')+' '+(o.zone||'')+'</b><span>Adresse</span><b>'+(o.adr||'-')+'</b><span>Paiement</span><b>'+(o.pay||'')+'</b><span>Date</span><b>'+(o.date||'')+'</b><span>Total</span><b>'+(o.total||0).toLocaleString()+' FCFA</b></div></div>'+stepsHtml+'<div class="ord-sec"><h5>Articles ('+(o.items||[]).length+')</h5>'+itemsHtml+'</div></div>'}
 
