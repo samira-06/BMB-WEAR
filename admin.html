@@ -48,7 +48,7 @@ function file2small(file){return new Promise(res=>{const img=new Image();const r
 async function prevFiles(inp){UPLOADED=[];$('pprev').innerHTML='';const fs=[...inp.files].slice(0,5);
 for(const f of fs){try{const u=await file2small(f);UPLOADED.push(u);$('pprev').innerHTML+=`<img src="${u}" style="width:64px;height:76px;object-fit:cover;border-radius:10px;border:1px solid #333">`}catch(e){}}
 if(!UPLOADED.length)toast('Images illisibles');}
-async async function saveP(e){e.preventDefault();let urlImgs=[...document.querySelectorAll('.pimg')].map(i=>i.value.trim()).filter(Boolean);
+async function saveP(e){e.preventDefault();let urlImgs=[...document.querySelectorAll('.pimg')].map(i=>i.value.trim()).filter(Boolean);
 let localImgs=[...UPLOADED];
 if(Cloud.on()&&localImgs.length){toast('Upload photos cloud...');try{localImgs=await Promise.all(localImgs.map((u,i)=>Cloud.uploadPhoto(u,'cover'+i)))}catch(err){toast('Cloud HS — photos locales');}}
 const imgs=[...localImgs,...urlImgs].slice(0,5);
@@ -81,7 +81,7 @@ $('olist').innerHTML=o.map((x,i)=>`<tr><td><b>${x.num}</b><br>${x.nom}<br><small
 $('clist').innerHTML=u.map(x=>`<tr><td>${x.name}<br><small>${x.tel} • ${x.email} • ${x.addr||''}</small></td></tr>`).join('')||'Aucun client';
 const sh=DB.get('bmb_ship',{dk:2000,bn:3000,rg:5000,free:50000,wv:'77 478 98 75',om:'77 478 98 75',fm:'76 443 02 18'});
 $('s_dk').value=sh.dk;$('s_bn').value=sh.bn;$('s_rg').value=sh.rg;$('s_free').value=sh.free;$('s_wv').value=sh.wv;$('s_om').value=sh.om;$('s_fm').value=sh.fm;$('s_ntfy').value=DB.get('bmb_ntfy','bmb-wear-orders');
-const cc0=JSON.parse(localStorage.getItem('bmb_cloud')||'null');if(cc0){$('s_url').value=cc0.url||'';$('s_key').value=cc0.key||'';$('cloud_st').textContent='Cloud actif ✓';syncFromCloud()}
+const cc0=JSON.parse(localStorage.getItem('bmb_cloud')||'null');if(cc0){$('s_url').value=cc0.url||'';$('s_key').value=cc0.key||'';$('cloud_st').textContent='Cloud actif ✓';syncFromCloud()}}
 addColor('Noir','#000000','S:5 M:5 L:5 XL:5');
 async function syncFromCloud(){if(!Cloud.on())return;try{const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);const os=await Cloud.fetchOrders();if(os&&os.length){const local=DB.get('bmb_orders',[]);const nums=new Set(local.map(o=>o.num));os.forEach(o=>{if(!nums.has(o.num))local.push(o)});DB.set('bmb_orders',local)}load();toast('Cloud synchronisé ✓')}}catch(e){toast('Sync cloud impossible')}}
 if(sessionStorage.bmb_admin)show();
