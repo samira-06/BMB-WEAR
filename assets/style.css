@@ -1,4 +1,4 @@
-:root{--bg:#000;--card:#111;--line:#2a2a2a;--txt:#fff;--mut:#a3a3a3;--r:14px;--max:1240px}
+﻿:root{--bg:#000;--card:#111;--line:#2a2a2a;--txt:#fff;--mut:#a3a3a3;--r:14px;--max:1240px}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--txt);font-family:'Inter',system-ui,Arial,sans-serif;overflow-x:hidden}
@@ -33,7 +33,7 @@ h1 em{font-style:normal;-webkit-text-stroke:1.5px #fff;color:transparent}
 .sec-head h2{font-size:clamp(1.5rem,3.5vw,2.4rem);text-transform:uppercase}
 .sec-head p{color:var(--mut)}
 .video-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-.vcard{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);min-height:400px;background:var(--card);filter:grayscale(1)}
+.vcard{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);min-height:400px;background:var(--card)}
 .vcard video,.vcard .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .vcard .ph{background:linear-gradient(135deg,#222,#000);display:grid;place-items:center;font-size:3rem}
 .vcard .ov{position:absolute;inset:auto 0 0 0;padding:1rem;background:linear-gradient(transparent,rgba(0,0,0,.9))}
@@ -44,7 +44,7 @@ h1 em{font-style:normal;-webkit-text-stroke:1.5px #fff;color:transparent}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
 .card{background:#111;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:.2s}
 .card:hover{transform:translateY(-5px);border-color:#fff}
-.card .im{aspect-ratio:3/3.4;background:#1c1c1c;display:grid;place-items:center;font-size:3.2rem;position:relative;overflow:hidden;filter:grayscale(1)}
+.card .im{aspect-ratio:3/3.4;background:#1c1c1c;display:grid;place-items:center;font-size:3.2rem;position:relative;overflow:hidden}
 .card .im img{width:100%;height:100%;object-fit:cover}
 .badge{position:absolute;top:.6rem;left:.6rem;display:flex;gap:.35rem;flex-wrap:wrap}
 .badge i{font-style:normal;font-size:.64rem;font-weight:800;padding:.28rem .55rem;border-radius:999px;background:#000;color:#fff;border:1px solid #fff}
@@ -64,7 +64,7 @@ h1 em{font-style:normal;-webkit-text-stroke:1.5px #fff;color:transparent}
 .faq details[open] summary .pl{transform:rotate(45deg);color:#fff}
 .faq details p{padding:0 1.2rem 1.15rem 3.6rem;color:#c9c9c9;font-size:.9rem;line-height:1.55;margin:0}
 .colls{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-.coll{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);min-height:340px;display:flex;align-items:flex-end;background:#141414;filter:grayscale(1)}
+.coll{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);min-height:340px;display:flex;align-items:flex-end;background:#141414}
 .coll .bg{position:absolute;inset:0;display:grid;place-items:center;font-size:4.5rem;background:linear-gradient(135deg,#232323,#050505)}
 .coll .tx{position:relative;padding:1.2rem;background:linear-gradient(transparent,rgba(0,0,0,.92));width:100%}
 .coll .tx h3{font-size:1.25rem;text-transform:uppercase}.coll .tx p{color:#bbb;font-size:.85rem;margin:.25rem 0 .7rem}
@@ -86,7 +86,7 @@ label{font-size:.78rem;color:var(--mut)}
 .modal.open{display:grid}.sheet{background:#111;border:1px solid #333;border-radius:20px;max-width:560px;width:100%;padding:1.4rem;max-height:92dvh;overflow:auto}
 .sheet.wide{max-width:920px}
 .pd{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
-.gal-main{aspect-ratio:3/3.4;background:#1c1c1c;border-radius:14px;display:grid;place-items:center;font-size:4rem;overflow:hidden;filter:grayscale(1)}
+.gal-main{aspect-ratio:3/3.4;background:#1c1c1c;border-radius:14px;display:grid;place-items:center;font-size:4rem;overflow:hidden}
 .gal-main img{width:100%;height:100%;object-fit:cover}
 .gal-th{display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap}
 .gal-th div{width:58px;height:68px;border-radius:10px;background:#222;display:grid;place-items:center;cursor:pointer;border:2px solid transparent;overflow:hidden;font-size:1.5rem}
