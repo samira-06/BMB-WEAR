@@ -112,5 +112,7 @@ else{const f=DB.get('bmb_favs_'+u.tel,[]);$('acc_box').innerHTML=`<div class="pa
 function contact(e){e.preventDefault();window.open('https://wa.me/'+CFG.wa+'?text='+encodeURIComponent('Bonjour BMB Wear ! '+(document.getElementById('ct_msg')?.value||'')),'_blank')}
 const io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&x.target.classList.add('v')),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-renderShop();renderTrend();updCart();renderAcc();fillQ();$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
-try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.fetchProducts().then(ps=>{if(ps&&ps.length){DB.set('bmb_products_v2',ps);renderShop();renderTrend()}}).catch(()=>{})}catch(e){}
+updCart();renderAcc();fillQ();$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
+async function boot(){renderShop();renderTrend();try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);renderShop();renderTrend()}}}catch(e){}}
+boot();
+setInterval(async()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length&&JSON.stringify(ps)!==JSON.stringify(DB.get('bmb_products_v2',[]))){DB.set('bmb_products_v2',ps);renderShop();renderTrend();toast('Nouveautés synchronisées')}}}catch(e){}},45000);
