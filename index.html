@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BMB WEAR — Accueil</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><div class="topbar">BMB WEAR — Livraison offerte dès 50 000 FCFA</div>
+<header><nav class="nav"><a class="logo" href="index.html">BMB<span>WEAR</span></a>
+<div class="links" id="mlinks"><a href="index.html" class="active">Accueil</a><a href="boutique.html">Boutique</a><a href="suivi.html">Suivre</a><a href="compte.html">Compte</a><a href="contact.html">Contact</a></div>
+<button class="icon-btn" onclick="toggleCart()">🛒<b id="count">0</b></button>
+<button class="icon-btn burger" onclick="document.getElementById('mlinks').style.display='flex'">☰</button></nav></header>
+<section class="hero"><div class="bg-grad"></div><video class="bg" autoplay muted loop playsinline onerror="this.remove()"><source src="videos/hero.mp4"></video>
+<div class="hero-inner"><span class="kicker">Brazil • Nike • Adidas — Noir & Blanc</span><h1>BMB <em>WEAR</em><br>STREET ATTITUDE</h1>
+<p class="sub">Windbreakers Brazil + ensembles Nike & Adidas. 100% street, 100% monochrome.</p>
+<div class="hero-cta"><a class="btn" href="boutique.html">Explorer la boutique</a><a class="btn ghost" href="boutique.html">Voir les drops ▶</a></div>
+<div class="stats"><div><strong>2 400+</strong>clients</div><div><strong>72h</strong>livraison</div><div><strong>4.9/5</strong>avis</div></div></div></section>
+<div class="marquee"><div>BMB WEAR • WINDBREAKER BRAZIL • NIKE • ADIDAS • NOIR & BLANC • BMB WEAR • WINDBREAKER BRAZIL • NIKE • ADIDAS •</div></div>
+<section class="section reveal"><div class="sec-head"><div><h2>Looks en vidéo</h2><p>Mets tes MP4 dans /videos/</p></div><a class="btn ghost" href="boutique.html">Shopper</a></div>
+<div class="video-strip">
+<div class="vcard"><video autoplay muted loop playsinline onerror="this.remove()"><source src="videos/look1.mp4"></video><div class="ph">🇧🇷</div><div class="ov"><span class="tag">Brazil Windy</span><h3>Coupe-vent Brazil</h3></div></div>
+<div class="vcard"><video autoplay muted loop playsinline onerror="this.remove()"><source src="videos/look2.mp4"></video><div class="ph">👟</div><div class="ov"><span class="tag">Nike Tech</span><h3>Ensemble Nike</h3></div></div>
+<div class="vcard"><video autoplay muted loop playsinline onerror="this.remove()"><source src="videos/look3.mp4"></video><div class="ph">⚡</div><div class="ov"><span class="tag">Adidas Orig</span><h3>Ensemble Adidas</h3></div></div>
+</div></section>
+<section class="section reveal"><div class="sec-head"><h2>Tendances</h2><a class="btn ghost" href="boutique.html">Toute la boutique</a></div><div class="grid" id="trend"></div></section>
+<footer><div class="foot"><div><h3>BMB WEAR</h3><p>Noir & blanc. Brazil windbreaker, Nike, Adidas. Dakar — Sénégal.</p></div><div><b>Pages</b><br><a href="boutique.html">Boutique</a><br><a href="suivi.html">Suivre</a><br><a href="compte.html">Compte</a></div><div><b>Contact</b><br>+221 77 478 98 75</div><div><b>Admin</b><br><a href="admin.html">Espace admin</a></div></div></footer>
+<div class="drawer" id="drawer"><header><b>Panier</b><button class="icon-btn" onclick="toggleCart()">✕</button></header><div class="cart-items" id="citems"></div><div style="padding:1rem;border-top:1px solid #2a2a2a"><p id="ctotal"></p><button class="btn" style="width:100%;margin-top:.6rem" onclick="openCheckout()">Commander</button></div></div>
+<div class="modal" id="checkout"><div class="sheet"><h2>Commander</h2><input id="c_nom" placeholder="Nom & Prénom"><input id="c_tel" placeholder="Téléphone"><select id="c_zone"><option>Dakar Centre (2000)</option><option>Banlieue (3000)</option><option>Régions (5000)</option></select><input id="c_adr" placeholder="Adresse"><label>Paiement</label><div class="pay"><button onclick="setPay(this,'Wave')" class="on">Wave</button><button onclick="setPay(this,'Orange Money')">Orange</button><button onclick="setPay(this,'Free Money')">Free</button></div><div id="osum" style="margin:.8rem 0"></div><button class="btn" style="width:100%" onclick="confirmOrder()">Confirmer</button><button class="btn ghost" style="width:100%;margin-top:.5rem" onclick="closeM('checkout')">Fermer</button></div></div>
+<div class="modal" id="success"><div class="sheet" style="text-align:center"><h2>✓ Confirmée !</h2><p id="s_txt"></p><p>Wave / OM au <b>77 478 98 75</b> + capture WhatsApp.</p><p><a class="btn" href="https://wa.me/221774789875">WhatsApp</a></p><button class="btn ghost" onclick="closeM('success')">Continuer</button></div></div>
+<div class="toast" id="toast"></div><script src="assets/app.js"></script></body></html>
