@@ -8,7 +8,7 @@ const SEED=[
 {id:'p4',name:'Windbreaker Brazil Retro 2002',cat:'windbreaker',price:22000,old:0,trend:0,isnew:1,emoji:'💚',desc:'Edition retro 2002.',images:[],colors:[{name:'Vert',hex:'#00a651',sizes:{S:8,M:8,L:8,XL:8}}]},
 {id:'p5',name:'Bonnet BMB + Chaussettes',cat:'accessoire',price:8000,old:10000,trend:0,isnew:1,emoji:'🧢',desc:'Pack accessoires.',images:[],colors:[{name:'Noir',hex:'#000000',sizes:{TU:12}}]}];
 const DB={get(k,f){try{const v=JSON.parse(localStorage.getItem(k));return v??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
-const PHOTO_MAP={p1:['assets/img/windbreaker-brazil-94.jpg'],p2:['assets/img/nike-tech-noir-gris.jpg','assets/img/nike-tech-marron-beige.jpg'],p3:['assets/img/adidas-adicolor.jpg'],p4:['assets/img/brazil-retro-blanc.jpg','assets/img/brazil-tech.jpg','assets/img/brazil-black.jpg'],p5:['assets/img/lot-3.jpg']};
+const PHOTO_MAP={p1:['assets/img/windbreaker-brazil-94.jpg'],p2:['assets/img/brillant.jpg'],p3:['assets/img/adidas-adicolor.jpg'],p4:['assets/img/brazil-retro-blanc.jpg','assets/img/brasil-menthe.jpg','assets/img/brazil-black.jpg'],p5:['assets/img/lot-3.jpg']};
 if(!DB.get('bmb_products_v2'))DB.set('bmb_products_v2',SEED);
 (function(){const ps=DB.get('bmb_products_v2',[]);let ch=false;ps.forEach(p=>{const m=PHOTO_MAP[p.id];if(m&&!(p.images||[]).length){p.images=m;ch=true}});if(ch)DB.set('bmb_products_v2',ps)})();
 if(!DB.get('bmb_orders'))DB.set('bmb_orders',[]);
