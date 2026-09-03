@@ -83,13 +83,14 @@ function buildZones(){const sh=shipCfg();CFG.zones=[{n:'Dakar Centre',f:sh.dk},{
 const fee=n=>n==='Banlieue'?sh.bn:(n==='Régions'?sh.rg:sh.dk);
 const zs=$('c_zone');if(zs)zs.innerHTML=CFG.zones.map(z=>`<option>${z.n} (${z.f.toLocaleString()} F)</option>`).join('');
 const q=$('c_quart');if(q)q.innerHTML='<option value="">— Choisir quartier / ville —</option>'+Object.entries(QUART).map(([zn,qs])=>`<optgroup label="${zn} — ${fee(zn).toLocaleString()} F">${qs.map(x=>`<option value="${x}|${zn} (${fee(zn).toLocaleString()} F)">${x}</option>`).join('')}</optgroup>`).join('')}
-function syncZone(){const q=$('c_quart')?.value||'';if(q&&q.includes('|')){const z=q.split('|')[1];const zs=$('c_zone');if(zs)zs.value=z}sum()}
-function sum(){if(!$('osum'))return;let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF($('c_zone')?.value||'');if(st>=CFG.free)s=0;
+function zoneLabel(){const q=$('c_quart')?.value||'';if(q&&q.includes('|'))return q.split('|')[1];return $('c_zone')?.value||'Dakar Centre'}
+function syncZone(){const z=zoneLabel();const za=$('zone_auto');if(za)za.textContent=z?'Livraison : '+z:'';const zs=$('c_zone');if(zs)zs.value=z;sum()}
+function sum(){if(!$('osum'))return;let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF(zoneLabel());if(st>=CFG.free)s=0;
 $('osum').innerHTML=`Sous-total ${st.toLocaleString()} + Livraison ${s.toLocaleString()} = <b style="color:#fff">${(st+s).toLocaleString()} FCFA</b> via ${pay}<br><small>Wave/OM: ${CFG.pay['Wave']} • Free: ${CFG.pay['Free Money']}</small>`}
 function confirmOrder(){const nom=$('c_nom')?.value.trim(),tel=$('c_tel')?.value.trim();const qv=$('c_quart')?.value||'';const quartier=qv.split('|')[0]||'';
 if(!nom||!tel)return toast('Nom + téléphone requis');if($('c_quart')&&!quartier)return toast('Choisis ton quartier');
-let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF($('c_zone').value);if(st>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
-const o={num,nom,tel,zone:$('c_zone').value,quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'Paiement en attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3};
+let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF(zoneLabel());if(st>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
+const o={num,nom,tel,zone:zoneLabel(),quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'Paiement en attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3};
 const all=DB.get('bmb_orders',[]);all.unshift(o);DB.set('bmb_orders',all);notifyNtfy(o);
 try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushOrder(o).catch(()=>{})}catch(e){}
 decrStock(cart);cart=[];DB.set('bmb_cart',cart);updCart();closeM('checkout');
