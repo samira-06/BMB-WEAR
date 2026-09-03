@@ -75,6 +75,7 @@ if(!nom||!tel)return toast('Nom + téléphone requis');if($('c_quart')&&!quartie
 let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF($('c_zone').value);if(st>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
 const o={num,nom,tel,zone:$('c_zone').value,quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'En attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3};
 const all=DB.get('bmb_orders',[]);all.unshift(o);DB.set('bmb_orders',all);notifyNtfy(o);
+try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushOrder(o).catch(()=>{})}catch(e){}
 decrStock(cart);cart=[];DB.set('bmb_cart',cart);updCart();closeM('checkout');
 if($('s_txt'))$('s_txt').innerHTML=`Merci ${nom} ! <b>${num}</b> — <b>${o.total.toLocaleString()} FCFA</b><br>Envoie ${pay} au <b>${CFG.pay[pay]}</b> + capture WhatsApp.<br><span style="color:#f59e0b">⏳ 1h pour confirmer sinon annulation auto.</span><br><a class="btn" style="margin-top:.6rem;display:inline-block" href="https://wa.me/${CFG.wa}?text=${encodeURIComponent('Paiement '+num+' '+o.total)}">WhatsApp</a><br><small>Suivi: page Suivre avec ${tel} + ${num}</small>`;
 $('success')?.classList.add('open');renderAcc()}
@@ -98,3 +99,4 @@ function contact(e){e.preventDefault();window.open('https://wa.me/'+CFG.wa+'?tex
 const io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&x.target.classList.add('v')),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 renderShop();renderTrend();updCart();renderAcc();fillQ();$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
+try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.fetchProducts().then(ps=>{if(ps&&ps.length){DB.set('bmb_products_v2',ps);renderShop();renderTrend()}}).catch(()=>{})}catch(e){}

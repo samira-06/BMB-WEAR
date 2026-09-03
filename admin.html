@@ -25,8 +25,12 @@
 <div id="v-orders" style="display:none"><h1>Commandes</h1><div class="panel"><table><thead><tr><th>N° / Client</th><th>Articles</th><th>Total</th><th>Statut</th><th></th></tr></thead><tbody id="olist"></tbody></table></div></div>
 <div id="v-clients" style="display:none"><h1>Clients (1 compte / tel + email)</h1><div class="panel"><table><tbody id="clist"></tbody></table></div></div>
 <div id="v-ship" style="display:none"><h1>Livraison & Paiement (style SYTAM)</h1>
-<form class="box" onsubmit="saveShip(event)"><label>Dakar Centre</label><input id="s_dk" type="number"><label>Banlieue</label><input id="s_bn" type="number"><label>Régions</label><input id="s_rg" type="number"><label>Offerte dès</label><input id="s_free" type="number"><label>Wave</label><input id="s_wv"><label>Orange Money</label><input id="s_om"><label>Free Money</label><input id="s_fm"><label>Topic ntfy (notif commandes — installe l'app ntfy et abonne-toi à ce topic)</label><input id="s_ntfy" placeholder="bmb-wear-orders"><button class="btn">Sauver</button></form></div>
+<form class="box" onsubmit="saveShip(event)"><label>Dakar Centre</label><input id="s_dk" type="number"><label>Banlieue</label><input id="s_bn" type="number"><label>Régions</label><input id="s_rg" type="number"><label>Offerte dès</label><input id="s_free" type="number"><label>Wave</label><input id="s_wv"><label>Orange Money</label><input id="s_om"><label>Free Money</label><input id="s_fm"><label>Topic ntfy (notif commandes — installe l'app ntfy et abonne-toi à ce topic)</label><input id="s_ntfy" placeholder="bmb-wear-orders">
+<hr style="border-color:#2a2a2a;margin:1rem 0"><h3>Base durable — Supabase (photos illimitées)</h3>
+<p><small>1) Crée un projet sur supabase.com → 2) SQL Editor → colle <b>supabase/schema.sql</b> du repo → Run → 3) colle ici URL + clé anon (Project Settings → API).</small></p>
+<label>Supabase URL</label><input id="s_url" placeholder="https://xxx.supabase.co"><label>Clé anon</label><input id="s_key" placeholder="eyJ..."><div style="display:flex;gap:.5rem"><button type="button" class="btn ghost" onclick="testCloud()">Tester</button><button class="btn" style="flex:1">Sauver</button></div><p><small id="cloud_st"></small></p></form></div>
 </div></div><div class="toast" id="toast"></div>
+<script src="assets/db.js"></script>
 <script>
 const DB={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 const $=id=>document.getElementById(id);
@@ -44,21 +48,28 @@ function file2small(file){return new Promise(res=>{const img=new Image();const r
 async function prevFiles(inp){UPLOADED=[];$('pprev').innerHTML='';const fs=[...inp.files].slice(0,5);
 for(const f of fs){try{const u=await file2small(f);UPLOADED.push(u);$('pprev').innerHTML+=`<img src="${u}" style="width:64px;height:76px;object-fit:cover;border-radius:10px;border:1px solid #333">`}catch(e){}}
 if(!UPLOADED.length)toast('Images illisibles');}
-function saveP(e){e.preventDefault();const urlImgs=[...document.querySelectorAll('.pimg')].map(i=>i.value.trim()).filter(Boolean);
-const imgs=[...UPLOADED,...urlImgs].slice(0,5);
-const colors=[...document.querySelectorAll('.crow')].slice(0,5).map(r=>({name:r.querySelector('.cn').value||'Unique',hex:r.querySelector('.ch').value,img:r.querySelector('.cdata').value||r.querySelector('.ci').value.trim(),sizes:parseSizes(r.querySelector('.cs').value)}));
+async async function saveP(e){e.preventDefault();let urlImgs=[...document.querySelectorAll('.pimg')].map(i=>i.value.trim()).filter(Boolean);
+let localImgs=[...UPLOADED];
+if(Cloud.on()&&localImgs.length){toast('Upload photos cloud...');try{localImgs=await Promise.all(localImgs.map((u,i)=>Cloud.uploadPhoto(u,'cover'+i)))}catch(err){toast('Cloud HS — photos locales');}}
+const imgs=[...localImgs,...urlImgs].slice(0,5);
+let colors0=[...document.querySelectorAll('.crow')].slice(0,5).map(r=>({name:r.querySelector('.cn').value||'Unique',hex:r.querySelector('.ch').value,img:r.querySelector('.cdata').value||r.querySelector('.ci').value.trim(),sizes:parseSizes(r.querySelector('.cs').value)}));
+if(Cloud.on()){for(const cc of colors0){if(cc.img&&cc.img.startsWith('data:')){try{cc.img=await Cloud.uploadPhoto(cc.img,'couleur')}catch(err){}}}}
+const colors=colors0;
 if(!colors.length)colors.push({name:'Unique',hex:'#ffffff',sizes:{TU:10}});
 let ps=DB.get('bmb_products_v2',[]);const id=$('p_id').value||('p'+Date.now());
 const obj={id,name:$('p_name').value,cat:$('p_cat').value,price:+$('p_price').value,old:+$('p_old').value||0,desc:$('p_desc').value,images:imgs,emoji:$('p_emoji').value||'👕',colors,trend:$('p_trend').checked,isnew:$('p_new').checked};
 const i=ps.findIndex(x=>x.id===id);i>=0?ps[i]=obj:ps.unshift(obj);DB.set('bmb_products_v2',ps);
+if(Cloud.on()){Cloud.saveProduct(obj).then(()=>toast('Cloud ✓')).catch(()=>toast('Cloud erreur — gardé en local'))}
 e.target.reset();UPLOADED=[];$('pprev').innerHTML='';$('crow').innerHTML='';$('p_id').value='';$('p_files').value='';addColor();load();toast('Article enregistré ✓')}
 function editP(id){const p=DB.get('bmb_products_v2',[]).find(x=>x.id===id);if(!p)return;$('p_id').value=p.id;$('p_name').value=p.name;$('p_cat').value=p.cat;$('p_price').value=p.price;$('p_old').value=p.old||'';$('p_desc').value=p.desc||'';$('p_emoji').value=p.emoji||'';
 const ims=document.querySelectorAll('.pimg');ims.forEach((inp,i)=>inp.value=(p.images||[])[i]||'');$('p_trend').checked=!!p.trend;$('p_new').checked=!!p.isnew;
 $('crow').innerHTML='';(p.colors||[]).forEach(c=>addColor(c.name,c.hex,Object.entries(c.sizes||{}).map(([k,v])=>k+':'+v).join(' '),c.img||''));tab('prods',document.querySelectorAll('.side a')[1]);window.scrollTo(0,0)}
-function delP(id){DB.set('bmb_products_v2',DB.get('bmb_products_v2',[]).filter(x=>x.id!==id));load()}
+function delP(id){DB.set('bmb_products_v2',DB.get('bmb_products_v2',[]).filter(x=>x.id!==id));if(Cloud.on())Cloud.delProduct(id).catch(()=>{});load()}
+async function testCloud(){const u=$('s_url').value.trim(),k=$('s_key').value.trim();if(!u||!k)return toast('URL + clé requises');localStorage.setItem('bmb_cloud',JSON.stringify({url:u,key:k}));try{await Cloud.test();$('cloud_st').textContent='✓ Connecté — base durable active';toast('Cloud OK ✓')}catch(e){$('cloud_st').textContent='✕ Échec — vérifie URL/clé + schema.sql exécuté';toast('Échec connexion')}}
 function st(i,v){const o=DB.get('bmb_orders',[]);o[i].status=v;DB.set('bmb_orders',o);load()}
 function delO(i){const o=DB.get('bmb_orders',[]);o.splice(i,1);DB.set('bmb_orders',o);load()}
-function saveShip(e){e.preventDefault();DB.set('bmb_ship',{dk:+$('s_dk').value,bn:+$('s_bn').value,rg:+$('s_rg').value,free:+$('s_free').value,wv:$('s_wv').value,om:$('s_om').value,fm:$('s_fm').value});DB.set('bmb_ntfy',$('s_ntfy').value.trim()||'bmb-wear-orders');toast('Sauvé ✓ — notifs ntfy: '+DB.get('bmb_ntfy',''))}
+function saveShip(e){e.preventDefault();DB.set('bmb_ship',{dk:+$('s_dk').value,bn:+$('s_bn').value,rg:+$('s_rg').value,free:+$('s_free').value,wv:$('s_wv').value,om:$('s_om').value,fm:$('s_fm').value});DB.set('bmb_ntfy',$('s_ntfy').value.trim()||'bmb-wear-orders');
+const u=$('s_url').value.trim(),k=$('s_key').value.trim();if(u&&k)localStorage.setItem('bmb_cloud',JSON.stringify({url:u,key:k}));toast('Sauvé ✓ — notifs ntfy: '+DB.get('bmb_ntfy',''))}
 function load(){const o=DB.get('bmb_orders',[]),p=DB.get('bmb_products_v2',[]),u=DB.get('bmb_users',[]);
 const ca=o.filter(x=>x.status!=='Annulée').reduce((a,x)=>a+x.total,0);
 $('k_ca').textContent=ca.toLocaleString()+' F';$('k_nb').textContent=o.length;$('k_wait').textContent=o.filter(x=>x.status==='En attente').length;
@@ -69,7 +80,9 @@ $('plist').innerHTML=p.map(x=>{const s=stockOf(x);return `<tr><td>${x.emoji} <b>
 $('olist').innerHTML=o.map((x,i)=>`<tr><td><b>${x.num}</b><br>${x.nom}<br><small>${x.tel}<br>${x.zone} ${x.adr||''}<br>${x.code?'Parrain:'+x.code:''}</small></td><td>${x.items.map(it=>`<small>${it.name} ${it.color}/${it.size} x${it.qty}</small>`).join('<br>')}</td><td>${x.total.toLocaleString()}<br><small>${x.pay}</small></td><td><select onchange="st(${i},this.value)">${['En attente','Confirmée','Livrée','Annulée'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}</select></td><td><button onclick="delO(${i})">✕</button></td></tr>`).join('')||'Aucune';
 $('clist').innerHTML=u.map(x=>`<tr><td>${x.name}<br><small>${x.tel} • ${x.email} • ${x.addr||''}</small></td></tr>`).join('')||'Aucun client';
 const sh=DB.get('bmb_ship',{dk:2000,bn:3000,rg:5000,free:50000,wv:'77 478 98 75',om:'77 478 98 75',fm:'76 443 02 18'});
-$('s_dk').value=sh.dk;$('s_bn').value=sh.bn;$('s_rg').value=sh.rg;$('s_free').value=sh.free;$('s_wv').value=sh.wv;$('s_om').value=sh.om;$('s_fm').value=sh.fm;$('s_ntfy').value=DB.get('bmb_ntfy','bmb-wear-orders')}
+$('s_dk').value=sh.dk;$('s_bn').value=sh.bn;$('s_rg').value=sh.rg;$('s_free').value=sh.free;$('s_wv').value=sh.wv;$('s_om').value=sh.om;$('s_fm').value=sh.fm;$('s_ntfy').value=DB.get('bmb_ntfy','bmb-wear-orders');
+const cc0=JSON.parse(localStorage.getItem('bmb_cloud')||'null');if(cc0){$('s_url').value=cc0.url||'';$('s_key').value=cc0.key||'';$('cloud_st').textContent='Cloud actif ✓';syncFromCloud()}
 addColor('Noir','#000000','S:5 M:5 L:5 XL:5');
+async function syncFromCloud(){if(!Cloud.on())return;try{const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);const os=await Cloud.fetchOrders();if(os&&os.length){const local=DB.get('bmb_orders',[]);const nums=new Set(local.map(o=>o.num));os.forEach(o=>{if(!nums.has(o.num))local.push(o)});DB.set('bmb_orders',local)}load();toast('Cloud synchronisé ✓')}}catch(e){toast('Sync cloud impossible')}}
 if(sessionStorage.bmb_admin)show();
 </script></body></html>
