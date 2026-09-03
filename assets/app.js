@@ -117,12 +117,15 @@ function logout(){localStorage.removeItem('bmb_session');renderAcc()}
 function renderAcc(){if(!$('acc_box'))return;const u=me();const prods=DB.get('bmb_products_v2',[]);
 if(!u){$('acc_box').innerHTML=`<div class="auth-grid"><form class="box" onsubmit="register(event)"><h3>Créer compte</h3><input id="r_nom" placeholder="Nom & Prénom"><input id="r_tel" placeholder="Téléphone (unique)"><input id="r_mail" placeholder="Email (unique)"><input id="r_adr" placeholder="Adresse livraison"><input id="r_pass" type="password" placeholder="Mot de passe"><button class="btn" style="width:100%">Créer</button><small>1 compte / numéro + email</small></form><form class="box" onsubmit="login(event)"><h3>Connexion</h3><input id="l_tel" placeholder="Téléphone"><input id="l_pass" type="password" placeholder="Mot de passe"><button class="btn" style="width:100%">Se connecter</button></form></div>`}
 else{const f=DB.get('bmb_favs_'+u.tel,[]);$('acc_box').innerHTML=`<div class="panel"><h3>Salut ${u.name} <button onclick="logout()">Sortir</button></h3><p><small>${u.tel} • ${u.email} • ${u.addr||''}</small></p></div><div class="track-grid" style="margin-top:1rem"><div class="panel"><h3>Favoris</h3>${f.map(id=>{const p=prods.find(x=>x.id===id);return p?`<p onclick="openP('${p.id}')" style="cursor:pointer">${p.emoji} ${p.name}</p>`:''}).join('')||'Aucun'}</div><div class="panel"><h3>Mes commandes</h3>${DB.get('bmb_orders',[]).filter(o=>o.tel===u.tel).slice(0,6).map(o=>`<p><b>${o.num}</b> ${o.total.toLocaleString()} — ${o.status}</p>`).join('')||'Aucune'}</div></div>`}}
-function contact(e){e.preventDefault();const n=(document.getElementById('ctc_nom')?.value||'').trim(),t=(document.getElementById('ctc_tel')?.value||'').trim(),m=(document.getElementById('ct_msg')?.value||'').trim();
-if(!n||!t||!m)return toast('Nom + téléphone + message requis');
-const msg={id:'m'+Date.now(),nom:n,tel:t,msg:m,date:new Date().toLocaleString(),lu:false};
+function validTel(t){const d=String(t||'').replace(/\D/g,'').replace(/^221/,'');return /^[367]\d{8}$/.test(d)?d:null}
+function contact(e){e.preventDefault();const n=(document.getElementById('ctc_nom')?.value||'').trim(),t=(document.getElementById('ctc_tel')?.value||'').trim(),ml=(document.getElementById('ctc_mail')?.value||'').trim().toLowerCase(),m=(document.getElementById('ct_msg')?.value||'').trim();
+if(!n||!t||!ml||!m)return toast('Nom + téléphone + email + message requis');
+const tel=validTel(t);if(!tel)return toast('Numéro invalide (9 chiffres, ex: 77 123 45 67)');
+if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ml))return toast('Email invalide');
+const msg={id:'m'+Date.now(),nom:n,tel:tel,email:ml,msg:m,date:new Date().toLocaleString(),lu:false};
 const all=DB.get('bmb_messages',[]);all.unshift(msg);DB.set('bmb_messages',all);
 try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushMessage(msg).catch(()=>{})}catch(x){}
-try{const tp=DB.get('bmb_ntfy','bmb-wear-orders');fetch('https://ntfy.sh/'+encodeURIComponent(tp),{method:'POST',body:'✉️ '+n+' ('+t+') : '+m}).catch(()=>{})}catch(x){}
+try{const tp=DB.get('bmb_ntfy','bmb-wear-orders');fetch('https://ntfy.sh/'+encodeURIComponent(tp),{method:'POST',body:'✉️ '+n+' ('+tel+' / '+ml+') : '+m}).catch(()=>{})}catch(x){}
 e.target.reset();toast('Message envoyé ✓ — on te répond vite')}
 const io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&x.target.classList.add('v')),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));

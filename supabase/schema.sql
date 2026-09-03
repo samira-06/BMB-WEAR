@@ -4,6 +4,7 @@
 
 alter table if exists products add column if not exists coll text default '';
 alter table if exists products add column if not exists description text default '';
+alter table if exists messages add column if not exists email text default '';
 
 create table if not exists products (
   id text primary key,

@@ -23,8 +23,8 @@ const fname='p'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+(name||'p
 const r=await fetch(c.url.replace(/\/$/,'')+'/storage/v1/object/product-photos/'+encodeURIComponent(fname),{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'image/jpeg'},body:b});
 if(!r.ok)throw new Error('upload '+r.status);return c.url.replace(/\/$/,'')+'/storage/v1/object/public/product-photos/'+encodeURIComponent(fname)},
 async test(){await this.req('products?select=id&limit=1');return true},
-async pushMessage(m){await this.req('messages',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify({id:m.id,name:m.nom,tel:m.tel,msg:m.msg,lu:!!m.lu})})},
-async fetchMessages(){try{return (await this.req('messages?select=*&order=created_at.desc&limit=200')).map(m=>({id:m.id,nom:m.name,tel:m.tel,msg:m.msg,date:m.created_at,lu:!!m.lu}))}catch(e){return[]}},
+async pushMessage(m){await this.req('messages',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify({id:m.id,name:m.nom,tel:m.tel,email:m.email||'',msg:m.msg,lu:!!m.lu})})},
+async fetchMessages(){try{return (await this.req('messages?select=*&order=created_at.desc&limit=200')).map(m=>({id:m.id,nom:m.name,tel:m.tel,email:m.email||'',msg:m.msg,date:m.created_at,lu:!!m.lu}))}catch(e){return[]}},
 async readMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({lu:true})})},
 async delMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{method:'DELETE'})}
 };
