@@ -13,6 +13,10 @@ if(!DB.get('bmb_orders'))DB.set('bmb_orders',[]);
 if(!DB.get('bmb_users'))DB.set('bmb_users',[]);
 let cat='all',pay='Wave',cart=DB.get('bmb_cart',[]),curP=null,curC=0,curS=null,curQ=1;
 const $=id=>document.getElementById(id);
+const STEPS=['Paiement en attente','Commande confirmée','En cours de traitement','En cours de livraison','Commande livrée'];
+const STEP_ICON=['⏳','✔','📦','🚚','🎉'];
+function normStatus(s){s=String(s||'');if(s.includes('annul'))return 'Commande annulée';if(s==='En attente'||s.includes('Paiement'))return STEPS[0];if(s==='Confirmée'||s.includes('confirm'))return STEPS[1];if(s.includes('traitement'))return STEPS[2];if(s.includes('livraison')&&!s.includes('livr'))return STEPS[3];if(s==='Livrée'||s.includes('livr'))return STEPS[4];return STEPS[0]}
+function stepIdx(s){const i=STEPS.indexOf(normStatus(s));return i<0?0:i}
 function toast(m){const t=$('toast');if(!t)return;t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2400)}
 function me(){const s=DB.get('bmb_session',null);return DB.get('bmb_users',[]).find(u=>u.tel===s)||null}
 function stockOf(p){let t=0;(p.colors||[]).forEach(c=>Object.values(c.sizes||{}).forEach(q=>t+=+q||0));return t}
@@ -73,7 +77,7 @@ $('osum').innerHTML=`Sous-total ${st.toLocaleString()} + Livraison ${s.toLocaleS
 function confirmOrder(){const nom=$('c_nom')?.value.trim(),tel=$('c_tel')?.value.trim();const qv=$('c_quart')?.value||'';const quartier=qv.split('|')[0]||'';
 if(!nom||!tel)return toast('Nom + téléphone requis');if($('c_quart')&&!quartier)return toast('Choisis ton quartier');
 let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF($('c_zone').value);if(st>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
-const o={num,nom,tel,zone:$('c_zone').value,quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'En attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3};
+const o={num,nom,tel,zone:$('c_zone').value,quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'Paiement en attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3};
 const all=DB.get('bmb_orders',[]);all.unshift(o);DB.set('bmb_orders',all);notifyNtfy(o);
 try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushOrder(o).catch(()=>{})}catch(e){}
 decrStock(cart);cart=[];DB.set('bmb_cart',cart);updCart();closeM('checkout');
@@ -81,10 +85,15 @@ if($('s_txt'))$('s_txt').innerHTML=`Merci ${nom} ! <b>${num}</b> — <b>${o.tota
 $('success')?.classList.add('open');renderAcc()}
 function decrStock(items){const ps=DB.get('bmb_products_v2',[]);items.forEach(it=>{const p=ps.find(x=>x.id===it.id);if(!p)return;const c=(p.colors||[]).find(x=>x.name===it.color);if(c&&c.sizes[it.size]!=null)c.sizes[it.size]=Math.max(0,(+c.sizes[it.size])-it.qty)});DB.set('bmb_products_v2',ps);renderShop();renderTrend()}
 function track(e){e.preventDefault();const t=$('t_tel').value.trim(),c=$('t_cmd').value.trim().toUpperCase();
-const o=DB.get('bmb_orders',[]).find(x=>x.num.toUpperCase()===c&&x.tel.replace(/\s/g,'').includes(t.replace(/\s/g,'')));
-if(!o){$('t_res').innerHTML='<b>Introuvable.</b>';return}
-const left=Math.max(0,(o.deadline||0)-Date.now());const mm=Math.floor(left/60000);
-$('t_res').innerHTML=`<h3>${o.num} — ${o.status}</h3><p>${o.nom} • ${o.total.toLocaleString()} FCFA • ${o.pay}<br>${o.zone} • ${o.adr||''}<br>${o.date}${o.status==='En attente'?`<br>⏳ Reste ~${mm} min pour payer`:''}</p>${o.items.map(i=>`<small>• ${i.name} ${i.color}/${i.size} x${i.qty}</small>`).join('<br>')}`}
+const found=DB.get('bmb_orders',[]).find(x=>x.num.toUpperCase()===c&&x.tel.replace(/\s/g,'').includes(t.replace(/\s/g,'')));
+if(!found){$('t_res').innerHTML='<div class="ord"><div class="ord-head"><b>Introuvable</b></div><div class="ord-sec">Verifie le N CMD et le telephone.</div></div>';return}
+const o=found,st=normStatus(o.status),idx=stepIdx(st),cancelled=(st==='Commande annulée'),pillCls=cancelled?'sx':'s'+idx;
+let stepsHtml='';
+if(cancelled){stepsHtml='<div class="ord-sec"><div class="cancel-box"><b>X Commande annulee.</b><br>Veuillez appeler le service client au <b>+221 77 478 98 75</b> pour en savoir plus.</div></div>'}
+else{stepsHtml='<div class="steps">'+STEPS.map((s,i)=>'<div class="step '+(i<=idx?'done ':'')+(i===idx?'now':'')+'"><div class="sdot">'+(i<=idx?STEP_ICON[i]:'O')+'</div><div><h4>'+s+'</h4><small>'+(i===0?'Envoie Wave/OM au 77 478 98 75 + capture WhatsApp':(i===idx?'Etape actuelle':(i<idx?'Termine':'A venir')))+'</small></div></div>').join('')+'</div>'}
+let itemsHtml=(o.items||[]).map(function(i){const vis=i.img?'<img src="'+i.img+'">':'<span style="font-size:1.6rem">'+(i.emoji||'T')+'</span>';return '<div class="oitem">'+vis+'<div style="flex:1"><b>'+i.name+'</b><br><small style="color:#9a9a9a">'+(i.color||'')+' - Taille '+(i.size||'')+' - Qte '+i.qty+'</small></div><b>'+((i.price||0)*(i.qty||1)).toLocaleString()+' F</b></div>'}).join('');
+$('t_res').innerHTML='<div class="ord"><div class="ord-head"><span class="num">'+o.num+'</span><span class="pill '+pillCls+'">'+st+'</span></div>'+stepsHtml+'<div class="ord-sec"><h5>Details commande</h5><div class="kv"><span>Client</span><b>'+o.nom+'</b><span>Telephone</span><b>'+o.tel+'</b><span>Livraison</span><b>'+(o.quartier||'')+' '+(o.zone||'')+'</b><span>Adresse</span><b>'+(o.adr||'-')+'</b><span>Paiement</span><b>'+(o.pay||'')+'</b><span>Date</span><b>'+(o.date||'')+'</b><span>Total</span><b>'+(o.total||0).toLocaleString()+' FCFA</b></div></div><div class="ord-sec"><h5>Articles ('+(o.items||[]).length+')</h5>'+itemsHtml+'</div></div>'}
+
 function register(e){e.preventDefault();const n=$('r_nom').value.trim(),t=$('r_tel').value.trim(),m=$('r_mail').value.trim().toLowerCase(),p=$('r_pass').value;
 if(!n||!t||!m||!p)return toast('Tous champs requis');const us=DB.get('bmb_users',[]);
 if(us.find(u=>u.tel===t))return toast('Numéro déjà utilisé');if(us.find(u=>u.email===m))return toast('Email déjà utilisé');
