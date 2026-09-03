@@ -38,17 +38,16 @@ function openP(id){const p=DB.get('bmb_products_v2',[]).find(x=>x.id===id);if(!p
 function galList(p,ci){const c=(p.colors||[])[ci];const L=[];if(c&&c.img)L.push(c.img);(p.images||[]).forEach(u=>{if(u&&!L.includes(u))L.push(u)});(p.colors||[]).forEach((x,i)=>{if(i!==ci&&x.img&&!L.includes(x.img))L.push(x.img)});return L.slice(0,6)}
 function drawP(){const p=curP;if(!p)return;const L=galList(p,curC);
 const gal=L.length?L.map((u,i)=>`<div class="${i===0?'on':''}" onclick="galGo(${i},event)"><img src="${u}"></div>`).join(''):`<div class="on">${p.emoji||'👕'}</div>`;
-$('pd_body').innerHTML=`<div><div class="gal-main" id="galMain">${L[0]?`<img src="${L[0]}">`:(p.emoji||'👕')}</div><div class="gal-th">${gal}</div></div>
-<div><h2>${p.name}</h2><div class="price" style="font-size:1.3rem">${p.price.toLocaleString()} FCFA ${p.old?`<s>${p.old.toLocaleString()}</s>`:''}</div>
-<p style="color:#a3a3a3;font-size:.9rem">${p.desc||''}</p>
+$('pd_body').innerHTML=`<div id="pd_info"><div style="display:flex;gap:.8rem;align-items:center">${((p.colors||[])[curC]?.img||coverOf(p))?`<img src="${((p.colors||[])[curC]?.img||coverOf(p))}" style="width:64px;height:78px;object-fit:cover;border-radius:12px;border:1px solid #333;flex-shrink:0">`:''}<div><h2 style="font-size:1.15rem">${p.name}</h2><div class="price" style="font-size:1.25rem">${p.price.toLocaleString()} FCFA ${p.old?`<s>${p.old.toLocaleString()}</s>`:''}</div></div></div>
+<p style="color:#a3a3a3;font-size:.9rem;margin-top:.6rem">${p.desc||''}</p>
 <p>${stockOf(p)===0?'<b style="color:#ff5555">Victime de son succès — bientôt de retour</b>':lowOf(p)?'<b style="color:#f59e0b">Plus que quelques pièces</b>':'<small style="color:#22c55e">Disponible</small>'}</p>
-<label>Couleur</label><div class="sw">${(p.colors||[]).map((c,i)=>`<button title="${c.name}" style="background:${c.hex}" class="${i===curC?'on':''}" onclick="selC(${i})"></button>`).join('')}</div>
-<small id="cname">${(p.colors||[])[curC]?.name||''}</small>
-<label>Taille — <a href="#" onclick="event.preventDefault();$('guide').style.display=$('guide').style.display==='none'?'block':'none'" style="text-decoration:underline">${(p.cat||'')==='chaussure'?'Guide pointures':'Guide des tailles'}</a></label>
+<label>Couleur — <b id="cname" style="color:#fff">${(p.colors||[])[curC]?.name||''}</b></label><div class="sw">${(p.colors||[]).map((c,i)=>`<button title="${c.name}" style="background:${c.hex}" class="${i===curC?'on':''}" onclick="selC(${i})"></button>`).join('')}</div>
+<label>Taille — <a href="#" onclick="event.stopPropagation();event.preventDefault();$('guide').style.display=$('guide').style.display==='none'?'block':'none'" style="text-decoration:underline">${(p.cat||'')==='chaussure'?'Guide pointures':'Guide des tailles'}</a></label>
 <div class="sz">${Object.entries(((p.colors||[])[curC]?.sizes)||{}).map(([s,q])=>`<button ${+q<=0?'disabled':''} class="${curS===s?'on':''}" onclick="selS('${s}')">${s}</button>`).join('')||'TU'}</div>
 <div id="guide" style="display:none">${guideHtml(p)}</div>
 <div class="qty" style="margin:.7rem 0"><button onclick="chQ(-1)">-</button><b id="qq">1</b><button onclick="chQ(1)">+</button></div>
-<button class="btn" style="width:100%" onclick="addVar()">Ajouter au panier</button></div>`}
+<button class="btn" style="width:100%" onclick="addVar()">Ajouter au panier</button></div>
+<div id="pd_gal"><div class="gal-main" id="galMain">${L[0]?`<img src="${L[0]}">`:(p.emoji||'👕')}</div><div class="gal-th">${gal}</div></div>`}
 function guideHtml(p){const isShoe=(p.cat||'')==='chaussure';
 if(isShoe)return `<table class="guide"><tr><th>Pointure EU</th><th>Pied (cm)</th></tr><tr><td>38</td><td>24,0</td></tr><tr><td>39</td><td>24,5</td></tr><tr><td>40</td><td>25,0</td></tr><tr><td>41</td><td>25,7</td></tr><tr><td>42</td><td>26,0</td></tr><tr><td>43</td><td>26,7</td></tr><tr><td>44</td><td>27,0</td></tr><tr><td>45</td><td>27,5</td></tr><tr><td>46</td><td>28,0</td></tr></table>`;
 return `<table class="guide"><tr><th>Taille</th><th>Poitrine cm</th><th>Long. pull</th><th>Long. pantalon</th></tr><tr><td>S</td><td>96</td><td>66</td><td>100</td></tr><tr><td>M</td><td>100</td><td>68</td><td>102</td></tr><tr><td>L</td><td>104</td><td>70</td><td>104</td></tr><tr><td>XL</td><td>110</td><td>72</td><td>106</td></tr></table>`}
