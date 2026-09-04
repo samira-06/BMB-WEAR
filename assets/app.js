@@ -107,7 +107,7 @@ function toggleMenu(){const m=$('mlinks');if(m)m.style.display=m.style.display==
 function setPay(b,v){pay=v;document.querySelectorAll('.pay button').forEach(x=>x.classList.remove('on'));b.classList.add('on');sum()}
 function openCheckout(){if(!cart.length)return toast('Panier vide');$('drawer')?.classList.remove('open');$('checkout')?.classList.add('open');sum()}
 function closeM(id){$(id)?.classList.remove('open')}
-function shipF(z){const m=String(z||'').match(/(\d[\d ]*)/);if(m)return +m[1].replace(/\s/g,'');const f=CFG.zones.find(x=>z&&z.includes(x.n));return f?f.f:2000}
+function shipF(z){const s=String(z||'');const i=s.search(/\d/);if(i>=0){const n=+s.slice(i).replace(/\D/g,'');if(n>0)return n}const f=CFG.zones.find(x=>z&&z.includes(x.n));return f?f.f:2000}
 function shipCfg(){return Object.assign({dk:2000,bn:3000,rg:5000,free:50000},DB.get('bmb_ship',{}))}
 function buildZones(){const sh=shipCfg();CFG.zones=[{n:'Dakar Centre',f:sh.dk},{n:'Banlieue',f:sh.bn},{n:'Régions',f:sh.rg}];CFG.free=sh.free;
 const fee=n=>n==='Banlieue'?sh.bn:(n==='Régions'?sh.rg:sh.dk);
