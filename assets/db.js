@@ -3,7 +3,8 @@
    Photos: uploadées vers Storage (URLs durables) si cloud actif,
    sinon compressées en local (limite navigateur). */
 const Cloud={
-cfg(){try{return JSON.parse(localStorage.getItem('bmb_cloud')||'null')}catch(e){return null}},
+DEF:{url:'https://hpnyjfefemgrbxxgzxpo.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhwbnlqZmVmZW1ncmJ4eGd6eHBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTY4NzAsImV4cCI6MjEwNDAzMjg3MH0.iCmd_lQN4BTM6M4_stxsezMn2P5Fwt_cb1Li6EnLRWc'},
+cfg(){try{const c=JSON.parse(localStorage.getItem('bmb_cloud')||'null');if(c&&c.url&&c.key)return c}catch(e){}return this.DEF},
 on(){const c=this.cfg();return !!(c&&c.url&&c.key)},
 H(extra){const c=this.cfg();return Object.assign({'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json'},extra||{})},
 async req(path,opt){const c=this.cfg();const r=await fetch(c.url.replace(/\/$/,'')+'/rest/v1/'+path,Object.assign({headers:this.H()},opt||{}));if(!r.ok)throw new Error('Supabase '+r.status);const t=await r.text();return t?JSON.parse(t):null},
