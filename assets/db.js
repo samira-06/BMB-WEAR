@@ -42,6 +42,11 @@ async readMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{m
 async delMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{method:'DELETE'})},
 async saveSetting(k,v){await this.req('settings',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify({key:k,value:v})})},
 async getSetting(k){try{const r=await this.req('settings?key=eq.'+encodeURIComponent(k)+'&select=value&limit=1');return r&&r[0]?r[0].value:null}catch(e){return null}},
+devId(){let d=null;try{d=localStorage.getItem('bmb_dev')}catch(e){}if(!d){d='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);try{localStorage.setItem('bmb_dev',d)}catch(e){}}return d||'x'},
+async diag(ev){try{if(!this.on())return;let last=0;try{last=+localStorage.getItem('bmb_diag_at')||0}catch(e){}if(!ev&&Date.now()-last<3600000)return;try{localStorage.setItem('bmb_diag_at',Date.now())}catch(e){}
+const id=this.devId();let devs={};try{const r=await this.req('settings?key=eq.diag&select=value&limit=1');if(r&&r[0]&&r[0].value)devs=r[0].value.devices||{}}catch(e){}
+const e0=devs[id]||{};e0.v=55;e0.seen=new Date().toISOString();if(ev==='push')e0.pushes=(e0.pushes||0)+1;if(ev==='fail')e0.fails=(e0.fails||0)+1;devs[id]=e0;
+await this.req('settings',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify({key:'diag',value:{devices:devs}})})}catch(e){}},
 mergeProducts(cur,ps){const JUNK=['zztest','__w','__test','__test2'];let del=[];try{del=JSON.parse(localStorage.getItem('bmb_deleted')||'[]')}catch(e){}let ch=false;const out=[];for(const p of (cur||[])){if(JUNK.includes(p.id)){ch=true;continue}out.push(p)}
 for(const c of (ps||[])){if(del.includes(c.id))continue;const i=out.findIndex(p=>p.id===c.id);if(i<0){const nc=Object.assign({},c);delete nc.dirty;out.unshift(nc);ch=true}else if(!out[i].dirty&&JSON.stringify(out[i])!==JSON.stringify(c)){const nc=Object.assign({},c);delete nc.dirty;out[i]=nc;ch=true}}
 return{list:out,changed:ch}},
