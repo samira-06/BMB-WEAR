@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin — BMB WEAR</title><link rel="stylesheet" href="assets/style.css?v=35"></head>
 <body>
-<div id="lock" style="min-height:100dvh;display:grid;place-items:center"><form class="box" style="min-width:300px" onsubmit="unlock(event)"><h2>BMB ADMIN</h2><input id="apass" type="password" placeholder="Mot de passe (bmb2026)"><button class="btn" style="width:100%">Entrer</button><p><a href="index.html">← Site</a></p></form></div>
+<div id="lock" style="min-height:100dvh;display:grid;place-items:center"><form class="box" style="min-width:300px" onsubmit="unlock(event)"><h2>BMB ADMIN</h2><input id="apass" type="password" placeholder="Mot de passe"><button class="btn" style="width:100%">Entrer</button><p><a href="index.html">← Site</a></p></form></div>
 <div class="adm" id="adm" style="display:none"><div class="side"><h3>BMB<span style="background:#fff;color:#000;padding:.1rem .4rem">ADMIN</span></h3>
 <a class="on" onclick="tab('dash',this)">Dashboard</a><a onclick="tab('prods',this)">Produits</a><a onclick="tab('orders',this)">Commandes</a><a onclick="tab('fin',this)">Finances</a><a onclick="tab('content',this)">Contenu</a><a onclick="tab('msgs',this)">Messages <b id="m_badge"></b></a><a onclick="tab('clients',this)">Clients</a><a onclick="tab('ship',this)">Livraison/Paiement</a><a href="index.html">← Site</a><a onclick="logoutA()">Sortir</a></div>
 <div style="padding:1.4rem;max-width:1000px">
@@ -47,7 +47,7 @@
 const DB={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 const $=id=>document.getElementById(id);
 function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2000)}
-function unlock(e){e.preventDefault();if($('apass').value==='bmb2026'){sessionStorage.bmb_admin='1';show()}else toast('Mauvais mot de passe')}
+function unlock(e){e.preventDefault();if($('apass').value==='bcisseb'){sessionStorage.bmb_admin='1';show()}else toast('Mauvais mot de passe')}
 function logoutA(){sessionStorage.removeItem('bmb_admin');location.reload()}
 async function checkCloud(){const el=$('cloud_line');try{if(typeof Cloud==='undefined'){el.textContent='Cloud : ANCIENNE VERSION — fais Ctrl+Shift+R';return}const sent=await Cloud.flushOut().catch(()=>0);await Cloud.test();const ps=await Cloud.fetchProducts();const pend=Cloud.pending();let last='';try{const t=+localStorage.getItem('bmb_lastsync');if(t)last=' — sync '+new Date(t).toLocaleTimeString()}catch(e){}el.textContent='Cloud : connecté ✓ ('+(ps||[]).length+' articles)'+(sent?' — '+sent+' envoyé(s) ✓':'')+(pend?' — '+pend+' en attente':'')+last}catch(e){el.textContent='Cloud : NON CONNECTÉ — vérifie internet puis réessaie ('+Cloud.pending()+' en attente)'}}
 function show(){$('lock').style.display='none';$('adm').style.display='grid';loadContentAdmin();if(typeof Catalog!=='undefined'){Catalog.load().then(c=>{if(c){const r=Catalog.merge(DB.get('bmb_products_v2',[]),c);if(r.changed)DB.set('bmb_products_v2',r.list)}load();checkCloud()}).catch(()=>{load();checkCloud()})}else{load();checkCloud()}}
