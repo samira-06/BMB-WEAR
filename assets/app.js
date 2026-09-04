@@ -92,7 +92,7 @@ if(!nom||!tel)return toast('Nom + téléphone requis');if($('c_quart')&&!quartie
 let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF(zoneLabel());if(st>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
 const o={num,nom,tel,zone:zoneLabel(),quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'Paiement en attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3};
 const all=DB.get('bmb_orders',[]);all.unshift(o);DB.set('bmb_orders',all);notifyNtfy(o);
-try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushOrder(o).catch(()=>{})}catch(e){}
+try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushOrder(o).then(()=>{try{localStorage.setItem('bmb_lastsync',Date.now())}catch(x){}}).catch(()=>{try{Cloud.queue('order',o)}catch(x){}})}catch(e){}
 decrStock(cart);cart=[];DB.set('bmb_cart',cart);updCart();closeM('checkout');
 if($('s_txt'))$('s_txt').innerHTML=`Merci ${nom} ! <b>${num}</b> — <b>${o.total.toLocaleString()} FCFA</b><br>Envoie ${pay} au <b>${CFG.pay[pay]}</b> + capture WhatsApp.<br><span style="color:#f59e0b">⏳ 1h pour confirmer sinon annulation auto.</span><br><a class="btn" style="margin-top:.6rem;display:inline-block" href="https://wa.me/${CFG.wa}?text=${encodeURIComponent('Paiement '+num+' '+o.total)}">WhatsApp</a><br><small>Suivi: page Suivre avec ${tel} + ${num}</small>`;
 $('success')?.classList.add('open');renderAcc()}
@@ -124,7 +124,7 @@ const tel=validTel(t);if(!tel)return toast('Numéro invalide (9 chiffres, ex: 77
 if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ml))return toast('Email invalide');
 const msg={id:'m'+Date.now(),nom:n,tel:tel,email:ml,msg:m,date:new Date().toLocaleString(),lu:false};
 const all=DB.get('bmb_messages',[]);all.unshift(msg);DB.set('bmb_messages',all);
-try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushMessage(msg).catch(()=>{})}catch(x){}
+try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushMessage(msg).catch(()=>{try{Cloud.queue('message',msg)}catch(x){}})}catch(x){}
 try{const tp=DB.get('bmb_ntfy','bmb-wear-orders');fetch('https://ntfy.sh/'+encodeURIComponent(tp),{method:'POST',body:'✉️ '+n+' ('+tel+' / '+ml+') : '+m}).catch(()=>{})}catch(x){}
 e.target.reset();toast('Message envoyé ✓ — on te répond vite')}
 const io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&x.target.classList.add('v')),{threshold:.1});
@@ -133,3 +133,4 @@ updCart();renderAcc();buildZones();$('c_zone')?.addEventListener('change',sum);$
 async function boot(){try{if(typeof Catalog!=='undefined'){const c=await Catalog.load();if(c){const r=Catalog.merge(DB.get('bmb_products_v2',[]),c);if(r.changed)DB.set('bmb_products_v2',r.list)}}}catch(e){}applyCatQuery();renderShop();renderTrend();renderColls();try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length){DB.set('bmb_products_v2',ps);renderShop();renderTrend();renderColls()}}}catch(e){}}
 boot();
 setInterval(async()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length&&JSON.stringify(ps)!==JSON.stringify(DB.get('bmb_products_v2',[]))){DB.set('bmb_products_v2',ps);renderShop();renderTrend();renderColls();toast('Nouveautés synchronisées')}}}catch(e){}},45000);
+setInterval(()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.flushOut().catch(()=>{})}catch(e){}},30000);
