@@ -67,7 +67,7 @@ $('pd_body').innerHTML=`<div id="pd_info"><div style="display:flex;gap:.8rem;ali
 <p>${stockOf(p)===0?'<b style="color:#ff5555">Victime de son succès — bientôt de retour</b>':lowOf(p)?'<b style="color:#f59e0b">Plus que quelques pièces</b>':'<small style="color:#22c55e">Disponible</small>'}</p>
 <label>Couleur — <b id="cname" style="color:#fff">${(p.colors||[])[curC]?.name||''}</b></label><div class="sw">${(p.colors||[]).map((c,i)=>`<button title="${c.name}" style="background:${c.hex}" class="${i===curC?'on':''}" onclick="selC(${i})"></button>`).join('')}</div>
 <label>Taille — <a href="#" onclick="event.stopPropagation();event.preventDefault();$('guide').style.display=$('guide').style.display==='none'?'block':'none'" style="text-decoration:underline">${(p.cat||'')==='chaussure'?'Guide pointures':'Guide des tailles'}</a></label>
-<div class="sz">${Object.entries(((p.colors||[])[curC]?.sizes)||{}).map(([s,q])=>`<button ${+q<=0?'disabled':''} class="${curS===s?'on':''}" onclick="selS('${s}')">${s}</button>`).join('')||'TU'}</div>
+<div class="sz">${Object.entries(((p.colors||[])[curC]?.sizes)||{}).map(([s,q])=>`<button data-sz="${s}" ${+q<=0?'disabled':''} class="${curS===s?'on':''}" onclick="selS('${s}')">${s}</button>`).join('')||'TU'}</div>
 <div id="guide" style="display:none">${guideHtml(p)}</div>
 <div class="qty" style="margin:.7rem 0"><button onclick="chQ(-1)">-</button><b id="qq">1</b><button onclick="chQ(1)">+</button></div>
 <button class="btn" style="width:100%" onclick="addVar()">Ajouter au panier</button>
@@ -77,7 +77,7 @@ function guideHtml(p){const isShoe=(p.cat||'')==='chaussure';
 if(isShoe)return `<table class="guide"><tr><th>Pointure EU</th><th>Pied (cm)</th></tr><tr><td>38</td><td>24,0</td></tr><tr><td>39</td><td>24,5</td></tr><tr><td>40</td><td>25,0</td></tr><tr><td>41</td><td>25,7</td></tr><tr><td>42</td><td>26,0</td></tr><tr><td>43</td><td>26,7</td></tr><tr><td>44</td><td>27,0</td></tr><tr><td>45</td><td>27,5</td></tr><tr><td>46</td><td>28,0</td></tr></table>`;
 return `<table class="guide"><tr><th>Taille</th><th>Poitrine cm</th><th>Long. pull</th><th>Long. pantalon</th></tr><tr><td>S</td><td>96</td><td>66</td><td>100</td></tr><tr><td>M</td><td>100</td><td>68</td><td>102</td></tr><tr><td>L</td><td>104</td><td>70</td><td>104</td></tr><tr><td>XL</td><td>110</td><td>72</td><td>106</td></tr></table>`}
 function selC(i){curC=i;curS=null;drawP()}
-function selS(s){curS=s;document.querySelectorAll('.sz button').forEach(b=>b.classList.toggle('on',b.textContent.includes(s)))}
+function selS(s){curS=s;document.querySelectorAll('.sz button').forEach(b=>b.classList.toggle('on',b.dataset.sz===s))}
 function chQ(d){curQ=Math.max(1,curQ+d);const e=$('qq');if(e)e.textContent=curQ}
 function addVar(){const p=curP,c=(p.colors||[])[curC];const sz=curS||Object.keys(c?.sizes||{})[0];if(!sz)return toast('Choisis taille');
 const av=+((c.sizes||{})[sz]||0);if(av<curQ)return toast('Plus assez de stock pour cette taille');
