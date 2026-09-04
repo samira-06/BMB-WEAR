@@ -12,8 +12,9 @@ async photos(){if(!this.on())return [];try{return await this.req('products?selec
 async fetchProducts(){const ps=await this.req('products?select=*&order=created_at.desc');const out=[];
 for(const p of ps){let cols=[];try{cols=await this.req('colors?product_id=eq.'+encodeURIComponent(p.id)+'&select=*')}catch(e){}
 out.push({id:p.id,name:p.name,cat:p.cat,price:p.price,old:p.old_price,desc:p.description,coll:p.coll||'',top:!!p.best,images:p.images||[],emoji:p.emoji||'👕',trend:!!p.trend,isnew:!!p.is_new,colors:cols.map(c=>({name:c.name,hex:c.hex,img:c.img||'',sizes:c.sizes||{}}))})}return out},
-async saveProduct(p){const body={id:p.id,name:p.name,cat:p.cat,price:p.price,old_price:p.old||0,description:p.desc||'',coll:p.coll||'',best:!!p.top,images:p.images||[],emoji:p.emoji||'👕',trend:!!p.trend,is_new:!!p.isnew};
-await this.req('products',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify(body)});
+async saveProduct(p){const full={id:p.id,name:p.name,cat:p.cat,price:p.price,old_price:p.old||0,description:p.desc||'',coll:p.coll||'',best:!!p.top,images:p.images||[],emoji:p.emoji||'👕',trend:!!p.trend,is_new:!!p.isnew};
+const post=b=>this.req('products',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify(b)});
+try{await post(full)}catch(e){await post({id:p.id,name:p.name,cat:p.cat,price:p.price,old_price:p.old||0,images:p.images||[],emoji:p.emoji||'👕',trend:!!p.trend,is_new:!!p.isnew})}
 await this.req('colors?product_id=eq.'+encodeURIComponent(p.id),{method:'DELETE'});
 for(const c of (p.colors||[]))await this.req('colors',{method:'POST',body:JSON.stringify({product_id:p.id,name:c.name,hex:c.hex,img:c.img||'',sizes:c.sizes||{}})})},
 async delProduct(id){await this.req('colors?product_id=eq.'+encodeURIComponent(id),{method:'DELETE'});await this.req('products?id=eq.'+encodeURIComponent(id),{method:'DELETE'})},
@@ -28,7 +29,7 @@ sess(){try{return JSON.parse(localStorage.getItem('bmb_asession')||'null')}catch
 isAdmin(){const s=this.sess();return !!(s&&s.at&&s.exp>Date.now())},
 async authSignIn(email,pass){const c=this.cfg();const r=await fetch(c.url.replace(/\/$/,'')+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':c.key,'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});if(!r.ok)throw new Error('login');const j=await r.json();const sess={at:j.access_token,exp:Date.now()+((+j.expires_in||3600)*1000)-60000,email};localStorage.setItem('bmb_asession',JSON.stringify(sess));return sess},
 authOut(){try{localStorage.removeItem('bmb_asession')}catch(e){}},
-async pushMessage(m){await this.req('messages',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify({id:m.id,name:m.nom,tel:m.tel,email:m.email||'',msg:m.msg,lu:!!m.lu})})},
+async pushMessage(m){const b={id:m.id,name:m.nom,tel:m.tel,email:m.email||'',msg:m.msg,lu:!!m.lu};const post=x=>this.req('messages',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify(x)});try{await post(b)}catch(e){await post({id:m.id,name:m.nom,tel:m.tel,msg:m.msg,lu:!!m.lu})}},
 async fetchMessages(){try{return (await this.req('messages?select=*&order=created_at.desc&limit=200')).map(m=>({id:m.id,nom:m.name,tel:m.tel,email:m.email||'',msg:m.msg,date:m.created_at,lu:!!m.lu}))}catch(e){return[]}},
 async readMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({lu:true})})},
 async delMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{method:'DELETE'})},
