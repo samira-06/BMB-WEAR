@@ -9,7 +9,7 @@ const SEED=[
 {id:'p3',name:'Ensemble Adidas Adicolor',cat:'adidas',price:32000,old:38000,trend:1,isnew:1,emoji:'⚡',desc:'Trefoil brodé, bandes mythiques.',images:[],colors:[{name:'Noir',hex:'#000000',sizes:{S:5,M:5,L:5,XL:5}},{name:'Blanc',hex:'#ffffff',sizes:{S:1,M:2,L:1,XL:1}}]},
 {id:'p4',name:'Windbreaker Brazil Retro 2002',cat:'windbreaker',price:22000,old:0,trend:0,isnew:1,emoji:'💚',desc:'Edition retro 2002.',images:[],colors:[{name:'Vert',hex:'#00a651',sizes:{S:8,M:8,L:8,XL:8}}]},
 {id:'p5',name:'Bonnet BMB + Chaussettes',cat:'accessoire',price:8000,old:10000,trend:0,isnew:1,emoji:'🧢',desc:'Pack accessoires.',images:[],colors:[{name:'Noir',hex:'#000000',sizes:{TU:12}}]}];
-const DB={get(k,f){try{const v=JSON.parse(localStorage.getItem(k));return v??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
+const DB={get(k,f){try{const v=JSON.parse(localStorage.getItem(k));return v??f}catch{return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Stockage plein — supprime des photos lourdes');throw e}}};
 const PHOTO_MAP={p1:['assets/img/windbreaker-brazil-94.jpg'],p2:['assets/img/brillant.jpg'],p3:['assets/img/adidas-adicolor.jpg'],p4:['assets/img/brazil-retro-blanc.jpg','assets/img/brasil-menthe.jpg','assets/img/brazil-black.jpg'],p5:['assets/img/lot-3.jpg']};
 if(!DB.get('bmb_products_v2'))DB.set('bmb_products_v2',SEED);
 (function(){const ps=DB.get('bmb_products_v2',[]);let ch=false;ps.forEach(p=>{const m=PHOTO_MAP[p.id];if(m&&!(p.images||[]).length){p.images=m;ch=true}});if(ch)DB.set('bmb_products_v2',ps)})();
