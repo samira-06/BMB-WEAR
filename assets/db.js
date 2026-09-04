@@ -34,6 +34,9 @@ async readMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{m
 async delMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{method:'DELETE'})},
 async saveSetting(k,v){await this.req('settings',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify({key:k,value:v})})},
 async getSetting(k){try{const r=await this.req('settings?key=eq.'+encodeURIComponent(k)+'&select=value&limit=1');return r&&r[0]?r[0].value:null}catch(e){return null}},
+mergeProducts(cur,ps){let del=[];try{del=JSON.parse(localStorage.getItem('bmb_deleted')||'[]')}catch(e){}let ch=false;const out=(cur||[]).slice();
+for(const c of (ps||[])){if(del.includes(c.id))continue;const i=out.findIndex(p=>p.id===c.id);if(i<0){const nc=Object.assign({},c);delete nc.dirty;out.unshift(nc);ch=true}else if(!out[i].dirty&&JSON.stringify(out[i])!==JSON.stringify(c)){const nc=Object.assign({},c);delete nc.dirty;out[i]=nc;ch=true}}
+return{list:out,changed:ch}},
 async storageUsage(){try{const c=this.cfg();let off=0,total=0,n=0,page=true;while(page){const r=await fetch(c.url.replace(/\/$/,'')+'/storage/v1/object/list/product-photos',{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json'},body:JSON.stringify({limit:100,offset:off})});if(!r.ok)break;const a=await r.json();if(!a||!a.length)break;a.forEach(o=>{total+=+(o.metadata&&o.metadata.size||o.size||0);n++});off+=a.length;page=a.length===100}return{n,mo:total/1048576}}catch(e){return null}},
 async delOrder(num){await this.req('orders?num=eq.'+encodeURIComponent(num),{method:'DELETE'})},
 queue(t,d){try{const q=JSON.parse(localStorage.getItem('bmb_outbox')||'[]');q.push({t,d});localStorage.setItem('bmb_outbox',JSON.stringify(q))}catch(e){}},
