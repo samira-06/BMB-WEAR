@@ -29,3 +29,17 @@ async fetchMessages(){try{return (await this.req('messages?select=*&order=create
 async readMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({lu:true})})},
 async delMessage(id){await this.req('messages?id=eq.'+encodeURIComponent(id),{method:'DELETE'})}
 };
+const Catalog={URL:'assets/catalog.json?v=23',
+ORIG:{p1:{name:'Windbreaker Brazil 94',price:25000,old:32000,desc:'Coupe-vent Brazil 94, tissu déperlant, broderie poitrine.',cat:'windbreaker'},p2:{name:'Ensemble Nike Tech Fleece Noir',price:35000,old:42000,desc:'Haut + pantalon Tech Fleece, coupe regular.',cat:'nike'},p3:{name:'Ensemble Adidas Adicolor Noir',price:32000,old:38000,desc:'Trefoil brodé, bandes mythiques.',cat:'adidas'},p4:{name:'Windbreaker Brazil Retro 2002',price:22000,old:0,desc:'Edition retro 2002.',cat:'windbreaker'},p5:{name:'Bonnet BMB + Chaussettes',price:8000,old:10000,desc:'Pack accessoires.',cat:'accessoire'}},
+SEED_IDS:['p1','p2','p3','p4','p5','p6','p7','p8'],
+async load(){const r=await fetch(this.URL);if(!r.ok)throw 0;return await r.json()},
+pristine(p){const o=this.ORIG[p.id];if(!o)return false;return p.name===o.name&&+p.price===o.price&&+(p.old||0)===o.old&&String(p.desc||'')===o.desc&&String(p.cat||'')===o.cat},
+merge(ps,cat){let ch=false;const ids=new Set(cat.map(c=>c.id));let del=[];try{del=JSON.parse(localStorage.getItem('bmb_deleted')||'[]')}catch(e){}
+const out=[];
+for(const c of cat){if(del.includes(c.id))continue;const l=ps.find(p=>p.id===c.id);
+if(!l){out.push(Object.assign({},c));ch=true}
+else if(l.custom){out.push(l)}
+else if(this.pristine(l)){const u=Object.assign({},l,{name:c.name,price:c.price,old:c.old,desc:c.desc,images:(c.images||[]).slice(),emoji:c.emoji||'👕'});if(JSON.stringify(u)!==JSON.stringify(l)){out.push(u);ch=true}else out.push(l)}
+else{l.custom=1;out.push(l);ch=true}}
+for(const p of ps){if(!ids.has(p.id)&&(p.custom||!this.SEED_IDS.includes(p.id)))out.push(p);else if(!ids.has(p.id))ch=true}
+return{list:out,changed:ch}}};
