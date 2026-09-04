@@ -90,7 +90,15 @@ const key=id+'|'+c.name+'|'+sz;const l=cart.find(x=>x.key===key);if(l)l.qty++;el
 function updCart(){if(!$('count'))return;$('count').textContent=cart.reduce((a,c)=>a+c.qty,0);
 if($('citems'))$('citems').innerHTML=cart.map((c,i)=>`<div class="citem"><div style="font-size:1.8rem">${c.img?`<img src="${c.img}" onerror="this.remove()" style="width:44px;height:52px;object-fit:cover;border-radius:8px">`:c.emoji||'👕'}</div><div class="t"><b>${c.name}</b><br><small><span class="dot" style="background:${dotOf(c)}"></span> ${c.color} • ${c.size} • ${c.price.toLocaleString()}</small><div class="qty"><button onclick="chq(${i},-1)">-</button>${c.qty}<button onclick="chq(${i},1)">+</button></div></div><button onclick="rm(${i})">✕</button></div>`).join('')||'Panier vide.';
 const tot=cart.reduce((a,c)=>a+c.price*c.qty,0);if($('ctotal'))$('ctotal').innerHTML='<b>Total: '+tot.toLocaleString()+' FCFA</b>';
-const sg=$('shipgauge');if(sg){const f=CFG.free;if(!cart.length)sg.innerHTML='';else if(tot>=f)sg.innerHTML='<div class="gauge"><i style="width:100%"></i></div><small style="color:#22c55e">Livraison offerte débloquée ✓</small>';else sg.innerHTML='<div class="gauge"><i style="width:'+Math.round(tot*100/f)+'%"></i></div><small>Plus que '+(f-tot).toLocaleString()+' FCFA pour la livraison offerte</small>'}}
+const sg=$('shipgauge');if(sg){const f=CFG.free;if(!cart.length)sg.innerHTML='';else if(tot>=f)sg.innerHTML='<div class="gauge"><i style="width:100%"></i></div><small style="color:#22c55e">Livraison offerte débloquée ✓</small>';else sg.innerHTML='<div class="gauge"><i style="width:'+Math.round(tot*100/f)+'%"></i></div><small>Plus que '+(f-tot).toLocaleString()+' FCFA pour la livraison offerte</small>'}
+renderCheckout()}
+function renderCheckout(){const el=$('co_items');if(!el)return;
+el.innerHTML=cart.map((c,i)=>`<div class="oitem">${c.img?`<img src="${c.img}" onerror="this.remove()">`:`<span style="font-size:1.6rem">${c.emoji||'👕'}</span>`}<div style="flex:1"><b>${c.name}</b><br><small style="color:#9a9a9a">${c.color||''} • Taille ${c.size||''} • ${c.price.toLocaleString()} F</small><div class="qty"><button onclick="chq(${i},-1)">-</button>${c.qty}<button onclick="chq(${i},1)">+</button></div></div><div style="text-align:right"><b>${(c.price*c.qty).toLocaleString()} F</b><br><button onclick="rm(${i})" style="background:none;border:0;color:#888;cursor:pointer;font-size:.8rem">retirer</button></div></div>`).join('')||'<p>Panier vide. <a href="boutique.html" style="text-decoration:underline">Voir la boutique</a></p>';
+const n=cart.reduce((a,c)=>a+c.qty,0);const cc=$('co_count');if(cc)cc.textContent=n+' article'+(n>1?'s':'');
+updCoTotals()}
+function updCoTotals(){let st=cart.reduce((a,c)=>a+c.price*c.qty,0);const pr=promoRate();const rem=pr?Math.round(st*(+pr.pct||0)/100):0;const base=st-rem;let s=0;if(cart.length){s=shipF(zoneLabel());if(base>=CFG.free)s=0}
+const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};const t=cart.length?(base+s):0;
+set('co_sub',st.toLocaleString()+' FCFA');set('co_ship',!cart.length?'—':(s?s.toLocaleString()+' FCFA':'Offerte ✓'));set('co_tot',t.toLocaleString()+' FCFA');set('co_btntot',t.toLocaleString()+' FCFA');set('co_stick',t.toLocaleString()+' FCFA')}
 function dotOf(c){const p=DB.get('bmb_products_v2',[]).find(x=>x.id===c.id);return (p?.colors||[]).find(x=>x.name===c.color)?.hex||'#555'}
 function chq(i,d){cart[i].qty+=d;if(cart[i].qty<1)cart.splice(i,1);DB.set('bmb_cart',cart);updCart()}
 function rm(i){cart.splice(i,1);DB.set('bmb_cart',cart);updCart()}
@@ -115,7 +123,7 @@ if(ck){const lv=[cart.length>0,nom0&&tel0,qv0.includes('|'),true,false];[...ck.c
 if(!os)return;const nom=nom0,tel=tel0,qv=qv0;
 if(!nom||!tel||!qv||!qv.includes('|')){os.innerHTML='';const za=$('zone_auto');if(za)za.textContent='';return}
 let st=cart.reduce((a,c)=>a+c.price*c.qty,0);const pr=promoRate();const rem=pr?Math.round(st*(+pr.pct||0)/100):0;const base=st-rem;let s=shipF(zoneLabel());if(base>=CFG.free)s=0;
-os.innerHTML=`Sous-total ${st.toLocaleString()}${rem?` − Remise ${pr.code} (-${pr.pct}%) : −${rem.toLocaleString()}`:''} + Livraison ${s.toLocaleString()} = <b style="color:#fff">${(base+s).toLocaleString()} FCFA</b> via ${pay}<br><small>Wave/OM: ${CFG.pay['Wave']} • Free: ${CFG.pay['Free Money']}</small>`}
+os.innerHTML=`Sous-total ${st.toLocaleString()}${rem?` − Remise ${pr.code} (-${pr.pct}%) : −${rem.toLocaleString()}`:''} + Livraison ${s.toLocaleString()} = <b style="color:#fff">${(base+s).toLocaleString()} FCFA</b> via ${pay}<br><small>Wave/OM: ${CFG.pay['Wave']} • Free: ${CFG.pay['Free Money']}</small>`;updCoTotals()}
 function confirmOrder(){const nom=$('c_nom')?.value.trim(),tel=$('c_tel')?.value.trim();const qv=$('c_quart')?.value||'';const quartier=qv.split('|')[0]||'';
 if(!nom||!tel)return toast('Nom + téléphone requis');if($('c_quart')&&!quartier)return toast('Choisis ton quartier');
 let st=cart.reduce((a,c)=>a+c.price*c.qty,0);const pr0=promoRate();const rem0=pr0?Math.round(st*(+pr0.pct||0)/100):0;const base0=st-rem0;let s=shipF(zoneLabel());if(base0>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
