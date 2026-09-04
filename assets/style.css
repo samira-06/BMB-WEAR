@@ -105,6 +105,8 @@ footer{border-top:1px solid var(--line);margin-top:3rem;background:#050505}
 .foot{max-width:var(--max);margin:auto;padding:2.5rem 1rem;display:grid;grid-template-columns:2fr 1fr 1fr;gap:1.5rem;color:var(--mut);font-size:.9rem}
 .reveal{opacity:0;transform:translateY(22px);transition:.55s}.reveal.v{opacity:1;transform:none}
 .toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:.8rem 1.2rem;border-radius:999px;font-weight:800;z-index:200;display:none;max-width:92vw;text-align:center}
+#success .sheet p{margin:.7rem 0}
+#success .sheet .btn,#success .sheet .btn.ghost{display:block;width:100%;margin:.5rem 0}
 .ord{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:18px;overflow:hidden}
 .ord-head{padding:1.1rem 1.2rem;border-bottom:1px solid #222;display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
 .ord-head .num{background:#fff;color:#000;font-weight:900;border-radius:10px;padding:.3rem .7rem}
