@@ -162,4 +162,8 @@ table{width:100%;border-collapse:collapse;font-size:.86rem}th,td{padding:.65rem;
 .timeline-v div::before{content:"";position:absolute;left:14px;top:30px;bottom:0;width:2px;background:#2a2a2a}
 .timeline-v div:last-child::before{display:none}
 .timeline-v b{width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:#fff;color:#000;display:grid;place-items:center;font-size:.8rem;z-index:1}
+.chart{display:flex;align-items:flex-end;gap:.4rem;height:150px;padding-top:.5rem}
+.chart .bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.chart .bar i{width:100%;max-width:26px;background:#fff;border-radius:4px 4px 0 0;min-height:2px}
+.chart .bar small{font-size:.62rem;color:#888;margin-top:.25rem}
 @media(max-width:900px){.trust{grid-template-columns:repeat(2,1fr)}}

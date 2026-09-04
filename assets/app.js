@@ -104,17 +104,20 @@ const fee=n=>n==='Banlieue'?sh.bn:(n==='Régions'?sh.rg:sh.dk);
 const zs=$('c_zone');if(zs)zs.innerHTML=CFG.zones.map(z=>`<option>${z.n} (${z.f.toLocaleString()} F)</option>`).join('');
 const q=$('c_quart');if(q)q.innerHTML='<option value="">— Choisir quartier / ville —</option>'+Object.entries(QUART).map(([zn,qs])=>`<optgroup label="${zn}">${qs.map(x=>`<option value="${x}|${zn} (${fee(zn).toLocaleString()} F)">${x}</option>`).join('')}</optgroup>`).join('')}
 function zoneLabel(){const q=$('c_quart')?.value||'';if(q&&q.includes('|'))return q.split('|')[1];return $('c_zone')?.value||'Dakar Centre'}
+function getPromos(){try{return DB.get('bmb_promos',[])}catch(e){return[]}}
+async function loadPromos(){try{if(typeof Cloud!=='undefined'&&Cloud.on()){const s=await Cloud.getSetting('promos');if(s)DB.set('bmb_promos',s)}}catch(e){}}
+function promoRate(){const c=(($('c_code')?.value)||'').trim().toUpperCase();if(!c)return null;return getPromos().find(p=>(p.code||'').toUpperCase()===c)||null}
 function syncZone(){const z=zoneLabel();const za=$('zone_auto');if(za)za.textContent=z?'Livraison : '+z:'';const zs=$('c_zone');if(zs)zs.value=z;sum()}
 function sum(){const os=$('osum');const ck=$('cksteps');const nom0=$('c_nom')?.value.trim(),tel0=$('c_tel')?.value.trim(),qv0=$('c_quart')?.value||'';
 if(ck){const lv=[cart.length>0,nom0&&tel0,qv0.includes('|'),true,false];[...ck.children].forEach((d,i)=>d.classList.toggle('on',!!lv[i]))}
 if(!os)return;const nom=nom0,tel=tel0,qv=qv0;
 if(!nom||!tel||!qv||!qv.includes('|')){os.innerHTML='';const za=$('zone_auto');if(za)za.textContent='';return}
-let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF(zoneLabel());if(st>=CFG.free)s=0;
-$('osum').innerHTML=`Sous-total ${st.toLocaleString()} + Livraison ${s.toLocaleString()} = <b style="color:#fff">${(st+s).toLocaleString()} FCFA</b> via ${pay}<br><small>Wave/OM: ${CFG.pay['Wave']} • Free: ${CFG.pay['Free Money']}</small>`}
+let st=cart.reduce((a,c)=>a+c.price*c.qty,0);const pr=promoRate();const rem=pr?Math.round(st*(+pr.pct||0)/100):0;const base=st-rem;let s=shipF(zoneLabel());if(base>=CFG.free)s=0;
+os.innerHTML=`Sous-total ${st.toLocaleString()}${rem?` − Remise ${pr.code} (-${pr.pct}%) : −${rem.toLocaleString()}`:''} + Livraison ${s.toLocaleString()} = <b style="color:#fff">${(base+s).toLocaleString()} FCFA</b> via ${pay}<br><small>Wave/OM: ${CFG.pay['Wave']} • Free: ${CFG.pay['Free Money']}</small>`}
 function confirmOrder(){const nom=$('c_nom')?.value.trim(),tel=$('c_tel')?.value.trim();const qv=$('c_quart')?.value||'';const quartier=qv.split('|')[0]||'';
 if(!nom||!tel)return toast('Nom + téléphone requis');if($('c_quart')&&!quartier)return toast('Choisis ton quartier');
-let st=cart.reduce((a,c)=>a+c.price*c.qty,0);let s=shipF(zoneLabel());if(st>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
-const o={num,nom,tel,zone:zoneLabel(),quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:$('c_code')?.value||'',note:$('c_note')?.value||'',items:cart,total:st+s,status:'Paiement en attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3,hist:[{st:'Paiement en attente',at:new Date().toLocaleString()}],stockOut:true};
+let st=cart.reduce((a,c)=>a+c.price*c.qty,0);const pr0=promoRate();const rem0=pr0?Math.round(st*(+pr0.pct||0)/100):0;const base0=st-rem0;let s=shipF(zoneLabel());if(base0>=CFG.free)s=0;const num='CMD'+Date.now().toString().slice(-6);
+const o={num,nom,tel,zone:zoneLabel(),quartier,adr:($('c_adr').value||'')+(quartier?' — '+quartier:''),pay,code:pr0?pr0.code:($('c_code')?.value||''),reduction:rem0,note:$('c_note')?.value||'',items:cart,total:base0+s,status:'Paiement en attente',date:new Date().toLocaleString(),deadline:Date.now()+3600e3,hist:[{st:'Paiement en attente',at:new Date().toLocaleString()}],stockOut:true};
 const all=DB.get('bmb_orders',[]);all.unshift(o);DB.set('bmb_orders',all);notifyNtfy(o);
 try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushOrder(o).then(()=>{try{localStorage.setItem('bmb_lastsync',Date.now())}catch(x){}}).catch(()=>{try{Cloud.queue('order',o)}catch(x){}})}catch(e){}
 decrStock(cart);cart=[];DB.set('bmb_cart',cart);updCart();const ck2=$('cksteps');if(ck2)[...ck2.children].forEach(d=>d.classList.add('on'));closeM('checkout');
@@ -134,7 +137,7 @@ $('t_res').innerHTML='<div class="ord"><div class="ord-head"><span class="num">'
 function register(e){e.preventDefault();const n=$('r_nom').value.trim(),t=$('r_tel').value.trim(),m=$('r_mail').value.trim().toLowerCase(),p=$('r_pass').value;
 if(!n||!t||!m||!p)return toast('Tous champs requis');const us=DB.get('bmb_users',[]);
 if(us.find(u=>u.tel===t))return toast('Numéro déjà utilisé');if(us.find(u=>u.email===m))return toast('Email déjà utilisé');
-us.push({name:n,tel:t,email:m,pass:btoa(p),addr:$('r_adr').value.trim()});DB.set('bmb_users',us);DB.set('bmb_session',t);renderAcc();toast('Compte créé ✓')}
+us.push({name:n,tel:t,email:m,pass:btoa(p),addr:$('r_adr').value.trim(),date:new Date().toLocaleDateString()});DB.set('bmb_users',us);DB.set('bmb_session',t);try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.pushCustomer({name:n,tel:t,email:m,pass:btoa(p),addr:$('r_adr').value.trim()}).catch(()=>{try{Cloud.queue('customer',{name:n,tel:t,email:m,pass:btoa(p),addr:$('r_adr').value.trim()})}catch(x){}})}catch(x){}renderAcc();toast('Compte créé ✓')}
 function login(e){e.preventDefault();const t=$('l_tel').value.trim(),p=$('l_pass').value;const u=DB.get('bmb_users',[]).find(x=>x.tel===t&&x.pass===btoa(p));
 if(!u)return toast('Identifiants incorrects');DB.set('bmb_session',t);renderAcc();toast('Connecté ✓')}
 function logout(){localStorage.removeItem('bmb_session');renderAcc()}
@@ -153,11 +156,11 @@ try{const tp=DB.get('bmb_ntfy','bmb-wear-orders');fetch('https://ntfy.sh/'+encod
 e.target.reset();toast('Message envoyé ✓ — on te répond vite')}
 const io=new IntersectionObserver(es=>es.forEach(x=>x.isIntersecting&&x.target.classList.add('v')),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-updCart();renderAcc();buildZones();ensureChrome();['c_nom','c_tel','c_adr'].forEach(id=>{const el=$(id);if(el&&!el.dataset.sum)el.dataset.sum='1',el.addEventListener('input',sum)});$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
+updCart();renderAcc();buildZones();ensureChrome();loadPromos();['c_nom','c_tel','c_adr','c_code'].forEach(id=>{const el=$(id);if(el&&!el.dataset.sum)el.dataset.sum='1',el.addEventListener('input',sum)});$('c_zone')?.addEventListener('change',sum);$('c_quart')?.addEventListener('change',syncZone);
 function mergeCloud(ps){const cur=DB.get('bmb_products_v2',[]);let del=[];try{del=JSON.parse(localStorage.getItem('bmb_deleted')||'[]')}catch(e){}let ch=false;const out=cur.slice();
 for(const c of (ps||[])){if(del.includes(c.id))continue;const i=out.findIndex(p=>p.id===c.id);if(i<0){const nc=Object.assign({},c);delete nc.dirty;out.unshift(nc);ch=true}else if(!out[i].dirty&&JSON.stringify(out[i])!==JSON.stringify(c)){const nc=Object.assign({},c);delete nc.dirty;out[i]=nc;ch=true}}
 if(ch)DB.set('bmb_products_v2',out);return ch}
 async function boot(){try{if(typeof Catalog!=='undefined'){const c=await Catalog.load();if(c){const r=Catalog.merge(DB.get('bmb_products_v2',[]),c);if(r.changed)DB.set('bmb_products_v2',r.list)}}}catch(e){}applyCatQuery();renderShop();renderTrend();renderColls();renderNew();renderBest();renderCatsHome();loadContent();try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length&&mergeCloud(ps)){renderShop();renderTrend();renderColls();renderNew();renderBest();renderCatsHome()}}}catch(e){}}
 boot();
-setInterval(async()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length&&mergeCloud(ps)){renderShop();renderTrend();renderColls();renderNew();renderBest();renderCatsHome();loadContent();toast('Nouveautés synchronisées')}}}catch(e){}},45000);
+setInterval(async()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on()){const ps=await Cloud.fetchProducts();if(ps&&ps.length&&mergeCloud(ps)){renderShop();renderTrend();renderColls();renderNew();renderBest();renderCatsHome();loadContent();loadPromos();toast('Nouveautés synchronisées')}}}catch(e){}},45000);
 setInterval(()=>{try{if(typeof Cloud!=='undefined'&&Cloud.on())Cloud.flushOut().catch(()=>{})}catch(e){}},30000);
