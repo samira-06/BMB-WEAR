@@ -26,6 +26,7 @@ const norm=o=>({num:o.num,nom:o.nom,tel:o.tel,zone:o.zone||'',quartier:o.quartie
 for(const c of (cloud||[])){if(!c||!c.num||pend.has(c.num))continue;const nc=norm(c);const i=out.findIndex(x=>x.num===nc.num);
 if(i<0){const l=Object.assign({},nc);try{if(!l.date)l.date=c.date||c.created_at||''}catch(x){}out.unshift(l);ch=true}
 else{const keep=out[i];if(!nc.hist.length&&keep.hist)nc.hist=keep.hist;if(!nc.date)nc.date=keep.date||'';const a=Object.assign({},keep,nc);if(JSON.stringify(a)!==JSON.stringify(keep)){out[i]=a;ch=true}}}
+if((cloud||[]).length<190){const cids=new Set(cloud.map(o=>o.num));for(let i=out.length-1;i>=0;i--){if(!cids.has(out[i].num)&&!pend.has(out[i].num)){out.splice(i,1);ch=true}}}
 return{list:out,changed:ch}},
 async uploadPhoto(dataUrl,name){const c=this.cfg();const s=this.sess();const tok=(s&&s.at&&s.exp>Date.now())?s.at:c.key;const b=await (await fetch(dataUrl)).blob();
 const fname='p'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+(name||'photo')+'.jpg';
@@ -49,6 +50,7 @@ const e0=devs[id]||{};e0.v=55;e0.seen=new Date().toISOString();if(ev==='push')e0
 await this.req('settings',{method:'POST',headers:this.H({'Prefer':'resolution=merge-duplicates'}),body:JSON.stringify({key:'diag',value:{devices:devs}})})}catch(e){}},
 mergeProducts(cur,ps){const JUNK=['zztest','__w','__test','__test2'];let del=[];try{del=JSON.parse(localStorage.getItem('bmb_deleted')||'[]')}catch(e){}let ch=false;const out=[];for(const p of (cur||[])){if(JUNK.includes(p.id)){ch=true;continue}out.push(p)}
 for(const c of (ps||[])){if(del.includes(c.id))continue;const i=out.findIndex(p=>p.id===c.id);if(i<0){const nc=Object.assign({},c);delete nc.dirty;out.unshift(nc);ch=true}else if(!out[i].dirty&&JSON.stringify(out[i])!==JSON.stringify(c)){const nc=Object.assign({},c);delete nc.dirty;out[i]=nc;ch=true}}
+if((ps||[]).length){const cids=new Set(ps.map(p=>p.id));const pendP=new Set();try{JSON.parse(localStorage.getItem('bmb_outbox')||'[]').forEach(o=>{if((o.t==='product'||o.t==='delProduct')&&o.d)pendP.add(o.d.id||o.d)})}catch(e){}const seedIds=(typeof Catalog!=='undefined'&&Catalog.SEED_IDS)||[];for(let i=out.length-1;i>=0;i--){const p=out[i];if(!cids.has(p.id)&&!p.dirty&&!pendP.has(p.id)&&!del.includes(p.id)&&seedIds.indexOf(p.id)<0){out.splice(i,1);ch=true}}}
 return{list:out,changed:ch}},
 async storageUsage(){try{const c=this.cfg();let off=0,total=0,n=0,page=true;while(page){const r=await fetch(c.url.replace(/\/$/,'')+'/storage/v1/object/list/product-photos',{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json'},body:JSON.stringify({limit:100,offset:off})});if(!r.ok)break;const a=await r.json();if(!a||!a.length)break;a.forEach(o=>{total+=+(o.metadata&&o.metadata.size||o.size||0);n++});off+=a.length;page=a.length===100}return{n,mo:total/1048576}}catch(e){return null}},
 async delOrder(num){await this.req('orders?num=eq.'+encodeURIComponent(num),{method:'DELETE'})},
